@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import json
 import sys
+import platform
 from mmvs.source import DummySensor, RealSensor
 from mmvs.config import SensorConfig
 from dotenv import load_dotenv
@@ -25,8 +26,17 @@ async def send_vital_signs():
         # Load config real sensor
         cfg = SensorConfig()
         lines = cfg.parse_file("profiles/xwr6843_profile_VitalSigns_20fps_Front.cfg")
-        sensor = RealSensor(lines, '/dev/ttyUSB0', '/dev/ttyUSB1')
-
+        
+        # Cross-platform serial port configuration
+        if platform.system() == "Windows":
+            cli_port = "COM3"  # Adjust based on your Windows setup
+            data_port = "COM4"  # Adjust based on your Windows setup
+        else:
+            cli_port = "/dev/ttyUSB0"
+            data_port = "/dev/ttyUSB1"
+        
+        sensor = RealSensor(lines, cli_port, data_port)
+        
     print(f"[LAPTOP] Connecting to {SERVER_URI}...")
     try:
         async with websockets.connect(SERVER_URI) as websocket:
