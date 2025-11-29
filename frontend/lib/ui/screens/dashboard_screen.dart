@@ -31,9 +31,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   SensorData? _latestSensorData;
   
   // UI update rate by FPS
-  static const int _uiUpdateRateHz = 10; // 10 FPS 
-  static const int _uiUpdateIntervalMs = 100; // 1000 / 10 = 100ms
-  static const Duration _uiUpdateInterval = Duration(milliseconds: _uiUpdateIntervalMs);
+  static const int _uiUpdateRateHz = 3; // 3 FPS 
+  static  int _uiUpdateIntervalMs = 1000 ~/ _uiUpdateRateHz; 
+  static final Duration _uiUpdateInterval = Duration(milliseconds: _uiUpdateIntervalMs);
 
   @override
   void initState() {
@@ -123,28 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // Header with connection status
               const Text("mmWave Vital Monitor",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              ValueListenableBuilder<String>(
-                valueListenable: _webSocketService.connectionStatus,
-                builder: (context, status, child) {
-                  final isConnected = _webSocketService.isConnected.value;
-                  return Row(
-                    children: [
-                      Icon(Icons.circle, 
-                          color: isConnected ? Colors.green : Colors.red, 
-                          size: 10),
-                      const SizedBox(width: 6),
-                      Text(status,
-                          style: TextStyle(
-                              color: isConnected ? Colors.greenAccent : Colors.redAccent,
-                              fontSize: 14)),
-                      const Spacer(),
-                      Text("${_uiUpdateRateHz}Hz UI", 
-                          style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                    ],
-                  );
-                },
-              ),
+              
               const SizedBox(height: 20),
 
               // Sensor Information Widget
@@ -208,10 +187,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   /// Build sensor information widget with throttled data
   Widget _buildSensorInfoWidget(SensorData? data) {
-    double detectionRange = 1.35; // Default
-    int rangeProfile = 27; // Default
-    double chestDisplacement = -2.48; // Default
-    int percentage = 57; // Default
+    double detectionRange = 1.35; 
+    int rangeProfile = 27;  
+    double maxRange = 2.5; // in meters
+    int percentage = 57; 
+    bool isReceivingData = data != null && _webSocketService.isConnected.value;
     
     if (data != null) {
       // Calculate values from cached full-rate data
@@ -226,12 +206,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
         detectionRange = 0.3 + (maxIndex / 64.0) * 1.3;
         rangeProfile = maxIndex;
+        
+        // Calculate max range based on sensor specifications
+        maxRange = 0.3 + (data.rangeProfile.length / 64.0) * 2.2; // Assuming 64 bins cover ~2.5m
       }
       
-      if (data.breathEnergy > 0) {
-        chestDisplacement = -3.0 + (data.breathEnergy % 100) / 50; 
-      }
-      
+      // Calculate signal quality based on energy levels
       double signalStrength = (data.heartEnergy + data.breathEnergy) / 35;
       percentage = (signalStrength.clamp(0, 100)).toInt();
     }
@@ -239,8 +219,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return SensorInfoWidget(
       detectionRange: detectionRange,
       rangeProfile: rangeProfile,
-      chestDisplacement: chestDisplacement,
+      maxRange: maxRange,
       percentage: percentage,
+      isReceivingData: isReceivingData,
     );
   }
 

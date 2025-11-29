@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 class SensorInfoWidget extends StatelessWidget {
   final double detectionRange;
   final int rangeProfile;
-  final double chestDisplacement;
+  final double maxRange;
   final int percentage;
+  final bool isReceivingData;
 
   const SensorInfoWidget({
     super.key,
     required this.detectionRange,
     required this.rangeProfile,
-    required this.chestDisplacement,
+    required this.maxRange,
     required this.percentage,
+    required this.isReceivingData,
   });
 
   @override
@@ -37,19 +39,6 @@ class SensorInfoWidget extends StatelessWidget {
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.withOpacity(0.5)),
-                ),
-                child: const Text(
-                  "Optimal",
-                  style: TextStyle(color: Colors.green, fontSize: 12),
                 ),
               ),
             ],
@@ -106,36 +95,81 @@ class SensorInfoWidget extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Chest Displacement
+          // Max Range and Data Status
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.straighten, color: Colors.white70, size: 16),
-              const SizedBox(width: 6),
-              const Text(
-                "Chest Displacement",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.zoom_out_map, color: Colors.white70, size: 16),
+                      const SizedBox(width: 6),
+                      const Text(
+                        "Max Range",
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "${maxRange.toStringAsFixed(1)}m",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Text(
-                "${chestDisplacement.toStringAsFixed(2)} mm",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                "Chest movement peak",
-                style: TextStyle(color: Colors.white54, fontSize: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        isReceivingData ? Icons.wifi : Icons.wifi_off,
+                        color: isReceivingData ? Colors.green : Colors.red,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "API Status",
+                        style: TextStyle(
+                          color: isReceivingData ? Colors.green : Colors.red,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isReceivingData ? "Receiving" : "No Data",
+                    style: TextStyle(
+                      color: isReceivingData ? Colors.green : Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 20),
+
+          // Signal Quality Section
+          Row(
+            children: [
+              Icon(Icons.signal_cellular_alt, color: Colors.white70, size: 16),
+              const SizedBox(width: 6),
+              const Text(
+                "Signal Quality",
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
 
           // Progress Bar Section
           Row(
@@ -192,6 +226,17 @@ class SensorInfoWidget extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 8),
+
+          // Quality Description
+          Text(
+            _getQualityDescription(percentage),
+            style: TextStyle(
+              color: _getQualityColor(percentage),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const SizedBox(height: 12),
 
           // Info Text
@@ -213,5 +258,33 @@ class SensorInfoWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getQualityDescription(int percentage) {
+    if (percentage >= 80) {
+      return "Excellent signal quality - Optimal for accurate measurements";
+    } else if (percentage >= 60) {
+      return "Good signal quality - Reliable measurements expected";
+    } else if (percentage >= 40) {
+      return "Fair signal quality - Some measurements may vary";
+    } else if (percentage >= 20) {
+      return "Poor signal quality - Consider repositioning";
+    } else {
+      return "Very poor signal - Please check sensor connection";
+    }
+  }
+
+  Color _getQualityColor(int percentage) {
+    if (percentage >= 80) {
+      return Colors.green;
+    } else if (percentage >= 60) {
+      return Colors.lightGreen;
+    } else if (percentage >= 40) {
+      return Colors.yellow;
+    } else if (percentage >= 20) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
   }
 }
