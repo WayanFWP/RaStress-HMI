@@ -4,8 +4,8 @@ class SensorData {
   final double heartEnergy;
   final double breathEnergy;
   final List<double> rangeProfile;
-  final double heartWaveform;  
-  final double breathWaveform; 
+  final double heartWaveform;
+  final double breathWaveform;
 
   SensorData({
     required this.heartRate,
@@ -18,15 +18,19 @@ class SensorData {
   });
 
   factory SensorData.fromJson(Map<String, dynamic> json) {
+    final vitals = json["vitals"] ?? {};
+
     return SensorData(
-      heartRate: json["heartRateEst_FFT"]?.toDouble() ?? 0,
-      breathRate: json["breathingRateEst_FFT"]?.toDouble() ?? 0,
-      heartEnergy: json["sumEnergyHeartWfm"]?.toDouble() ?? 0,
-      breathEnergy: json["sumEnergyBreathWfm"]?.toDouble() ?? 0,
-      heartWaveform: json["outputFilterHeartOut"]?.toDouble() ?? 0,
-      breathWaveform: json["outputFilterBreathOut"]?.toDouble() ?? 0,
-      rangeProfile: (json["RangeProfile"] != null)
-          ? List<double>.from(json["RangeProfile"].map((v) => v.toDouble()))
+      heartRate: vitals["heartRateEst_FFT"]?.toDouble() ?? 0.0,
+      breathRate: vitals["breathingRateEst_FFT"]?.toDouble() ?? 0.0,
+      heartEnergy: vitals["sumEnergyHeartWfm"]?.toDouble() ?? 0.0,
+      breathEnergy: vitals["sumEnergyBreathWfm"]?.toDouble() ?? 0.0,
+      heartWaveform: vitals["outputFilterHeartOut"]?.toDouble() ?? 0.0,
+      breathWaveform: vitals["outputFilterBreathOut"]?.toDouble() ?? 0.0,
+      rangeProfile: (vitals["RangeProfile"] != null)
+          ? List<double>.from(
+              vitals["RangeProfile"].map((v) => v.toDouble()),
+            )
           : [],
     );
   }
