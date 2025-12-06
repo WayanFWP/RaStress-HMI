@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'home_screen.dart';
 import 'sensor_info_screen.dart';
+import 'settings_screen.dart';
 import '../../core/websocket_services.dart';
 import '../../core/waveform_service.dart';
 import '../../core/trend_service.dart';
@@ -72,11 +73,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         webSocketService: _webSocketService,
         waveformService: _waveformService,
       ),
+      const SettingsScreen(),
     ];
 
     return Scaffold(
       body: screens[_currentIndex],
       bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -84,8 +95,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               _currentIndex = index;
             });
           },
-          backgroundColor: const Color(0xFF151B2D),
-          selectedItemColor: const Color(0xFF2BE4DC),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
           unselectedItemColor: Colors.white54,
           type: BottomNavigationBarType.fixed,
           items: const [
@@ -96,6 +107,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.sensors),
               label: 'Sensor Info',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Settings',
             ),
           ],
         ),

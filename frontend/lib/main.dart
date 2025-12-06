@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 import 'ui/screens/main_navigation_screen.dart';
-import 'ui/themes/app_theme.dart';
+import 'core/settings_service.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   runApp(const VitalMonitorApp());
 }
@@ -13,11 +15,18 @@ class VitalMonitorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "mmWave Vital Monitor",
-      theme: AppTheme.darkTheme,
-      home: const MainNavigationScreen(),
+    return ChangeNotifierProvider(
+      create: (_) => SettingsService(),
+      child: Consumer<SettingsService>(
+        builder: (context, settings, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: "mmWave Vital Monitor",
+            theme: settings.getCurrentTheme(),
+            home: const MainNavigationScreen(),
+          );
+        },
+      ),
     );
   }
 }
