@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../core/sensor_model.dart';
@@ -9,7 +10,14 @@ class WebSocketService {
 
   final ValueNotifier<SensorData?> latestData = ValueNotifier(null);
   final ValueNotifier<bool> isConnected = ValueNotifier(false);
+  final ValueNotifier<bool> isReceivingData = ValueNotifier(false);
   final ValueNotifier<String> connectionStatus = ValueNotifier("Disconnected");
+
+  DateTime? _lastDataReceivedTime;
+  Timer? _dataCheckTimer;
+  
+  // If no data received for 3 seconds, consider it as not receiving
+  static const Duration _dataTimeoutDuration = Duration(seconds: 3);
 
   WebSocketService(this.url);
 
@@ -22,21 +30,22 @@ class WebSocketService {
       
       _channel = WebSocketChannel.connect(Uri.parse(url));
 
+      // Start monitoring data reception
+      _startDataMonitoring();
+
       _channel!.stream.listen(
         (event) {
           isConnected.value = true;
           connectionStatus.value = "Connected - Receiving data";
-        //   if (kDebugMode) {
-        //     print("Raw data received: $event");
-        //   }
+          
+          // Update last data received timestamp
+          _lastDataReceivedTime = DateTime.now();
+          isReceivingData.value = true;
           
           try {
             final jsonData = jsonDecode(event);
             final newData = SensorData.fromJson(jsonData);
             latestData.value = newData;
-            // if (kDebugMode) {
-            //   print("Parsed - HR: ${newData.heartRate}, BR: ${newData.breathRate}");
-            // }
           } catch (e) {
             if (kDebugMode) {
               print("JSON parse error: $e");
@@ -45,6 +54,7 @@ class WebSocketService {
         },
         onError: (error) {
           isConnected.value = false;
+          isReceivingData.value = false;
           connectionStatus.value = "Connection error: $error";
           if (kDebugMode) {
             print("WebSocket error: $error");
@@ -52,6 +62,7 @@ class WebSocketService {
         },
         onDone: () {
           isConnected.value = false;
+          isReceivingData.value = false;
           connectionStatus.value = "Connection closed";
           if (kDebugMode) {
             print("WebSocket connection closed");
@@ -60,11 +71,32 @@ class WebSocketService {
       );
     } catch (e) {
       isConnected.value = false;
+      isReceivingData.value = false;
       connectionStatus.value = "Failed to connect: $e";
       if (kDebugMode) {
         print("Connection error: $e");
       }
     }
+  }
+
+  /// Monitor if data is still being received
+  void _startDataMonitoring() {
+    _dataCheckTimer?.cancel();
+    _dataCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_lastDataReceivedTime != null) {
+        final timeSinceLastData = DateTime.now().difference(_lastDataReceivedTime!);
+        
+        if (timeSinceLastData > _dataTimeoutDuration) {
+          // No data received for timeout duration
+          isReceivingData.value = false;
+          if (isConnected.value) {
+            connectionStatus.value = "Connected - No data received";
+          }
+        }
+      } else {
+        isReceivingData.value = false;
+      }
+    });
   }
 
   void reconnect() {
@@ -75,8 +107,11 @@ class WebSocketService {
   }
 
   void dispose() {
+    _dataCheckTimer?.cancel();
     _channel?.sink.close();
     isConnected.value = false;
+    isReceivingData.value = false;
     connectionStatus.value = "Disconnected";
+    _lastDataReceivedTime = null;
   }
 }
