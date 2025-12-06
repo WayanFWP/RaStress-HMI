@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../core/trend_service.dart';
 import '../../core/websocket_services.dart';
+import '../../core/stress_level_service.dart';
+import '../../core/range_profile_analyzer.dart';
+import '../widgets/circular_stress_indicator.dart';
 import 'trend_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final TrendService trendService;
   final WebSocketService webSocketService;
+  final StressLevelService stressLevelService;
 
   const HomeScreen({
     super.key,
     required this.trendService,
     required this.webSocketService,
+    required this.stressLevelService,
   });
 
   @override
@@ -18,15 +23,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _hasMultipleSources = false;
+  int _sourceCount = 0;
+
   @override
   void initState() {
     super.initState();
     widget.trendService.trendData.addListener(_onTrendUpdate);
+    widget.stressLevelService.currentStressLevel.addListener(_onStressUpdate);
+    widget.webSocketService.latestData.addListener(_onDataUpdate);
   }
 
   @override
   void dispose() {
     widget.trendService.trendData.removeListener(_onTrendUpdate);
+    widget.stressLevelService.currentStressLevel.removeListener(
+      _onStressUpdate,
+    );
+    widget.webSocketService.latestData.removeListener(_onDataUpdate);
     super.dispose();
   }
 
@@ -36,10 +50,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onStressUpdate() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _onDataUpdate() {
+    final data = widget.webSocketService.latestData.value;
+    if (data != null && data.rangeProfile.isNotEmpty) {
+      final hasMultiple = RangeProfileAnalyzer.hasMultipleSources(
+        data.rangeProfile,
+      );
+      final count = RangeProfileAnalyzer.getSourceCount(data.rangeProfile);
+
+      if (_hasMultipleSources != hasMultiple || _sourceCount != count) {
+        if (mounted) {
+          setState(() {
+            _hasMultipleSources = hasMultiple;
+            _sourceCount = count;
+          });
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final trendData = widget.trendService.trendData.value;
     final isReceivingData = widget.webSocketService.isReceivingData.value;
+    final stressData = widget.stressLevelService.currentStressLevel.value;
 
     // Calculate averages
     double avgHeartRate = 0;
@@ -69,9 +109,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   // Connection Status Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: isReceivingData ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                      color: isReceivingData
+                          ? Colors.green.withOpacity(0.2)
+                          : Colors.red.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isReceivingData ? Colors.green : Colors.red,
@@ -101,6 +146,91 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 24),
+
+              // Multiple Sources Warning (if detected)
+              if (_hasMultipleSources && isReceivingData)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.orange, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.orange,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text(
+                                  "Multiple Sources Detected",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "$_sourceCount targets",
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              "Multiple breathing sources detected — stand alone for accurate measurements.",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Circular Stress Level Indicator Card
+              CircularStressIndicator(
+                stressData: stressData,
+                vitalsSnapshot: widget.stressLevelService.currentVitals.value,
+                isReceivingData: isReceivingData,
+                stressLevelService: widget.stressLevelService, // Add this line
+              ),
+
+              const SizedBox(height: 16),
 
               // Compact Vital Averages Card - Tappable
               GestureDetector(
@@ -151,7 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Heart Rate Average
                       Row(
                         children: [
-                          Icon(Icons.favorite, color: Colors.redAccent, size: 24),
+                          Icon(
+                            Icons.favorite,
+                            color: Colors.redAccent,
+                            size: 24,
+                          ),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Breathing Rate Average
                       Row(
                         children: [
-                          Icon(Icons.air, color: const Color(0xFF2BE4DC), size: 24),
+                          Icon(
+                            Icons.air,
+                            color: const Color(0xFF2BE4DC),
+                            size: 24,
+                          ),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

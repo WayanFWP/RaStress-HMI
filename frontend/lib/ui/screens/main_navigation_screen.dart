@@ -5,6 +5,7 @@ import 'sensor_info_screen.dart';
 import '../../core/websocket_services.dart';
 import '../../core/waveform_service.dart';
 import '../../core/trend_service.dart';
+import '../../core/stress_level_service.dart';
 import '../../core/sensor_model.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late WebSocketService _webSocketService;
   late WaveformService _waveformService;
   late TrendService _trendService;
+  late StressLevelService _stressLevelService;
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _webSocketService = WebSocketService('ws://$ip:$port');
     _waveformService = WaveformService();
     _trendService = TrendService();
+    _stressLevelService = StressLevelService();
     
     _webSocketService.connect();
 
@@ -43,6 +46,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (data != null) {
       _waveformService.processWaveformData(data);
       _trendService.addSensorData(data);
+      _stressLevelService.addSensorData(data);
     }
   }
 
@@ -52,6 +56,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _webSocketService.dispose();
     _waveformService.dispose();
     _trendService.dispose();
+    _stressLevelService.dispose();
     super.dispose();
   }
 
@@ -61,6 +66,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       HomeScreen(
         trendService: _trendService,
         webSocketService: _webSocketService,
+        stressLevelService: _stressLevelService,
       ),
       SensorInfoScreen(
         webSocketService: _webSocketService,
@@ -85,7 +91,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.punch_clock),
-              label: 'Trends',
+              label: 'Dashboard',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.sensors),
