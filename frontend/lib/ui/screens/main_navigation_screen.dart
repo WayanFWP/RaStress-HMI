@@ -71,14 +71,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Scaffold(
       body: screens[_currentIndex],
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: const Color(0xFF2BE4DC).withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-        ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -92,12 +84,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+              icon: Icon(Icons.punch_clock),
+              label: 'Trends',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.sensors),
-              label: 'Sensor',
+              label: 'Sensor Info',
             ),
           ],
         ),

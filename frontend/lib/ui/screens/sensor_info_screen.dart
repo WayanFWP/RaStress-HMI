@@ -33,7 +33,7 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
   SensorData? _latestSensorData;
 
   // UI update interval (in seconds) duration
-  static const Duration _uiUpdateInterval = Duration(seconds: 2);
+  static const Duration _uiUpdateInterval = Duration(seconds: 1);
 
   @override
   void initState() {
@@ -91,13 +91,10 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
     }
   }
 
-  /// Start throttled UI update timer (every 2 seconds)
   void _startUIUpdateTimer() {
     _uiUpdateTimer = Timer.periodic(_uiUpdateInterval, (timer) {
-      // Only update UI if there's pending data
       if (_pendingUIUpdate && mounted) {
         setState(() {
-          // UI will rebuild with latest cached data
         });
         _pendingUIUpdate = false;
       }
@@ -115,18 +112,15 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               const Text(
                 "Sensor Information",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
 
-              // Sensor Information Widget
               _buildSensorInfoWidget(data),
               const SizedBox(height: 20),
 
-              // Stats Grid with integrated waveforms (1x2 layout)
               _buildStatsGrid(data),
             ],
           ),
@@ -222,6 +216,9 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
               ? breathWaveform
               : List.generate(120, (i) => 0.5 + 0.2 * sin(2 * pi * i / 30)),
         ),
+        const SizedBox(height: 14),
+
+        // Chest Displacement Card with Waveform
         StatCardWithWaveform(
           icon: Icons.start,
           color: const Color.fromARGB(255, 75, 185, 24),

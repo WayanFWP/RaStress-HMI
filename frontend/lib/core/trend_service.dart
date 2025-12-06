@@ -21,9 +21,9 @@ class TrendService {
   List<double> _heartRateBuffer = [];
   List<double> _breathRateBuffer = [];
   
-  // Store data every 5 seconds for 3 minutes (36 data points)
-  static const Duration _aggregationInterval = Duration(seconds: 5);
-  static const int _maxDataPoints = 36; // 3 minutes / 5 seconds
+  // Store data every 3 seconds for 5 minutes (100 data points)
+  static const Duration _aggregationInterval = Duration(seconds: 3);
+  static const int _maxDataPoints = 100; // 5 minutes / 3 seconds
 
   TrendService() {
     _startAggregation();
