@@ -4,6 +4,7 @@ import 'home_screen.dart';
 import 'sensor_info_screen.dart';
 import '../../core/websocket_services.dart';
 import '../../core/waveform_service.dart';
+import '../../core/trend_service.dart';
 import '../../core/sensor_model.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   late WebSocketService _webSocketService;
   late WaveformService _waveformService;
+  late TrendService _trendService;
 
   @override
   void initState() {
@@ -28,32 +30,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     _webSocketService = WebSocketService('ws://$ip:$port');
     _waveformService = WaveformService();
+    _trendService = TrendService();
     
     _webSocketService.connect();
 
     // Process waveform data in background continuously
-    _webSocketService.latestData.addListener(_processWaveformInBackground);
+    _webSocketService.latestData.addListener(_processDataInBackground);
   }
 
-  void _processWaveformInBackground() {
+  void _processDataInBackground() {
     final data = _webSocketService.latestData.value;
     if (data != null) {
       _waveformService.processWaveformData(data);
+      _trendService.addSensorData(data);
     }
   }
 
   @override
   void dispose() {
-    _webSocketService.latestData.removeListener(_processWaveformInBackground);
+    _webSocketService.latestData.removeListener(_processDataInBackground);
     _webSocketService.dispose();
     _waveformService.dispose();
+    _trendService.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      const HomeScreen(),
+      HomeScreen(
+        trendService: _trendService,
+        webSocketService: _webSocketService,
+      ),
       SensorInfoScreen(
         webSocketService: _webSocketService,
         waveformService: _waveformService,
