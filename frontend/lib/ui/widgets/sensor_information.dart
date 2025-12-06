@@ -34,7 +34,7 @@ class SensorInfoWidget extends StatelessWidget {
               Icon(Icons.sensors, color: const Color(0xFF2BE4DC), size: 18),
               const SizedBox(width: 8),
               const Text(
-                "Sensor Information",
+                "Sensor Information (mmVS Radar Sensor)",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

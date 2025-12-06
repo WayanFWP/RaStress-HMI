@@ -6,6 +6,7 @@ class SensorData {
   final List<double> rangeProfile;
   final double heartWaveform;
   final double breathWaveform;
+  final double chestDisplacement;
 
   SensorData({
     required this.heartRate,
@@ -15,6 +16,7 @@ class SensorData {
     required this.rangeProfile,
     required this.heartWaveform,
     required this.breathWaveform,
+    required this.chestDisplacement,
   });
 
   factory SensorData.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class SensorData {
       breathEnergy: vitals["sumEnergyBreathWfm"]?.toDouble() ?? 0.0,
       heartWaveform: vitals["outputFilterHeartOut"]?.toDouble() ?? 0.0,
       breathWaveform: vitals["outputFilterBreathOut"]?.toDouble() ?? 0.0,
+      chestDisplacement: vitals["unwrapPhasePeak_mm"]?.toDouble() ?? 0.0,
       rangeProfile: (vitals["RangeProfile"] != null)
           ? List<double>.from(
               vitals["RangeProfile"].map((v) => v.toDouble()),
