@@ -69,32 +69,33 @@ class DummySensor(DataSource):
 
         data = {
             "frame": int(self.t * 20),
-            
-            # Vital signs
-            "heartRateEst_FFT": current_hr,
-            "breathingRateEst_FFT": current_br,
-            
-            # Waveform outputs (these are the key for your charts)
-            "outputFilterBreathOut": breath_wave,
-            "outputFilterHeartOut": heart_wave,
-            
-            # Physical measurements
-            "unwrapPhasePeak_mm": chest_displacement,
-            
-            # Energy measurements
-            "sumEnergyBreathWfm": breath_energy,
-            "sumEnergyHeartWfm": heart_energy,
-            
-            # Range profile
-            "RangeProfile": range_profile,
-            
-            # Additional fields for completeness
-            "rangeBinIndexMax": 45,  # Peak at ~1m
-            "rangeBinIndexPhase": 45,
-            "maxVal": max(range_profile),
-            "processingCyclesOut": int(self.t * 1000) % 10000,
-            "rangeBinStartIndex": 15,  # 0.6m
-            "rangeBinEndIndex": 60,   # 1.5m
+            "vitals": {
+                # Vital signs
+                "heartRateEst_FFT": current_hr,
+                "breathingRateEst_FFT": current_br,
+                
+                # Waveform outputs (these are the key for your charts)
+                "outputFilterBreathOut": breath_wave,
+                "outputFilterHeartOut": heart_wave,
+                
+                # Physical measurements
+                "unwrapPhasePeak_mm": chest_displacement,
+                
+                # Energy measurements
+                "sumEnergyBreathWfm": breath_energy,
+                "sumEnergyHeartWfm": heart_energy,
+                
+                # Range profiless
+                "RangeProfile": range_profile,
+                
+                # Additional fields for completeness
+                "rangeBinIndexMax": 45,  # Peak at ~1m
+                "rangeBinIndexPhase": 45,
+                "maxVal": max(range_profile),
+                "processingCyclesOut": int(self.t * 1000) % 10000,
+                "rangeBinStartIndex": 15,  # 0.6m
+                "rangeBinEndIndex": 60,   # 1.5m
+            }
         }
         
         return data
