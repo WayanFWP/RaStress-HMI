@@ -23,7 +23,6 @@ class SensorInfoWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF151B2D),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF2BE4DC).withOpacity(0.3), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,7 +33,7 @@ class SensorInfoWidget extends StatelessWidget {
               Icon(Icons.sensors, color: const Color(0xFF2BE4DC), size: 18),
               const SizedBox(width: 8),
               const Text(
-                "Sensor Information (mmVS Radar Sensor)",
+                "Sensor Information (mmVS Radar)",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

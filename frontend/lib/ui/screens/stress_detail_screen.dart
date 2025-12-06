@@ -256,7 +256,10 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: const Color(0xFF151B2D)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF151B2D),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

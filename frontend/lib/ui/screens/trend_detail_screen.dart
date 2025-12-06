@@ -132,37 +132,35 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with icon, label and average value (with padding)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                  ),
+          // Header with icon, label and average value
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.white,
                 ),
-                const Spacer(),
-                Text(
-                  data.isEmpty ? "--" : avgValue.toStringAsFixed(1),
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              const Spacer(),
+              Text(
+                data.isEmpty ? "--" : avgValue.toStringAsFixed(1),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: color,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 12, color: Colors.white54),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(fontSize: 12, color: Colors.white54),
+              ),
+            ],
           ),
+          const SizedBox(height: 20),
 
           data.isEmpty
               ? SizedBox(
@@ -174,16 +172,13 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
                     ),
                   ),
                 )
-              : Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                  child: _buildBarChartWithTimestamps(data, color, isHeartRate),
-                ),
+              : _buildLineChartWithTimestamps(data, color, isHeartRate),
         ],
       ),
     );
   }
 
-  Widget _buildBarChartWithTimestamps(
+  Widget _buildLineChartWithTimestamps(
     List<TrendDataPoint> data,
     Color color,
     bool isHeartRate,
@@ -195,55 +190,28 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
         .toList();
     final maxValue = values.reduce((a, b) => a > b ? a : b);
     final minValue = values.reduce((a, b) => a < b ? a : b);
-    final range = maxValue - minValue;
 
     // Time formatter
     final timeFormat = DateFormat('HH:mm:ss');
 
     return Column(
       children: [
-        // Bar chart with grid background
+        // Line chart with grid background
         SizedBox(
-          height: 100,
-          child: Stack(
-            children: [
-              // Background grid lines
-              CustomPaint(
-                painter: _GridPainter(),
-                size: const Size(double.infinity, 100),
-              ),
-
-              // Bar chart on top
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(data.length, (index) {
-                  final value = values[index];
-                  final normalizedHeight = range > 0
-                      ? ((value - minValue) / range)
-                      : 0.5;
-                  final height = (normalizedHeight * 80 + 20).clamp(8.0, 100.0);
-
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 1.5),
-                      child: Container(
-                        height: height,
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
+          height: 120,
+          child: CustomPaint(
+            painter: _LineChartPainter(
+              values: values,
+              minValue: minValue,
+              maxValue: maxValue,
+              lineColor: color,
+            ),
+            size: const Size(double.infinity, 120),
           ),
         ),
         const SizedBox(height: 12),
 
-        // Timestamps - Fixed horizontal layout
+        // Timestamps
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -270,21 +238,161 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
   }
 }
 
-class _GridPainter extends CustomPainter {
+class _LineChartPainter extends CustomPainter {
+  final List<double> values;
+  final double minValue;
+  final double maxValue;
+  final Color lineColor;
+
+  _LineChartPainter({
+    required this.values,
+    required this.minValue,
+    required this.maxValue,
+    required this.lineColor,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
+    if (values.isEmpty) return;
+
+  const padding = 0.0;
+    final width = size.width - padding * 2;
+    final height = size.height - padding * 2;
+
+    // Draw grid
+    _drawGrid(canvas, size, padding);
+
+    final range = maxValue - minValue;
+    if (range == 0) return;
+
+    // Draw filled area under line
+    _drawFilledArea(canvas, size, width, height, padding, range);
+
+    // Draw line
+    _drawLine(canvas, size, width, height, padding, range);
+  }
+
+  void _drawGrid(Canvas canvas, Size size, double padding) {
+    final gridPaint = Paint()
       ..color = Colors.white.withOpacity(0.08)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 
-    // Draw 4 horizontal lines (dividing the chart into 5 sections)
+    // Horizontal grid lines (4 lines)
     for (int i = 1; i <= 4; i++) {
       final y = (size.height / 5) * i;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+      canvas.drawLine(
+        Offset(padding, y),
+        Offset(size.width - padding, y),
+        gridPaint,
+      );
+    }
+
+    // Vertical grid lines (3 lines)
+    for (int i = 1; i <= 3; i++) {
+      final x = (size.width / 4) * i;
+      canvas.drawLine(
+        Offset(x, padding),
+        Offset(x, size.height - padding),
+        gridPaint,
+      );
+    }
+
+    // Draw border
+    final borderPaint = Paint()
+      ..color = Colors.white.withOpacity(0.15)
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawRect(
+      Rect.fromLTWH(padding, padding, size.width - padding * 2, size.height - padding * 2),
+      borderPaint,
+    );
+  }
+
+  void _drawFilledArea(Canvas canvas, Size size, double width, double height, double padding, double range) {
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          lineColor.withOpacity(0.3),
+          lineColor.withOpacity(0.05),
+        ],
+      ).createShader(Rect.fromLTWH(padding, padding, width, height))
+      ..style = PaintingStyle.fill;
+
+    final fillPath = Path();
+    fillPath.moveTo(padding, height + padding);
+
+    for (int i = 0; i < values.length; i++) {
+      final x = (i / (values.length - 1)) * width + padding;
+      final normalizedValue = (values[i] - minValue) / range;
+      final y = (1 - normalizedValue) * height + padding;
+      fillPath.lineTo(x, y);
+    }
+
+    fillPath.lineTo(width + padding, height + padding);
+    fillPath.close();
+
+    canvas.drawPath(fillPath, fillPaint);
+  }
+
+  void _drawLine(Canvas canvas, Size size, double width, double height, double padding, double range) {
+    final linePaint = Paint()
+      ..color = lineColor
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final linePath = Path();
+
+    for (int i = 0; i < values.length; i++) {
+      final x = (i / (values.length - 1)) * width + padding;
+      final normalizedValue = (values[i] - minValue) / range;
+      final y = (1 - normalizedValue) * height + padding;
+
+      if (i == 0) {
+        linePath.moveTo(x, y);
+      } else {
+        linePath.lineTo(x, y);
+      }
+    }
+
+    canvas.drawPath(linePath, linePaint);
+
+    // Draw glow effect
+    final glowPaint = Paint()
+      ..color = lineColor.withOpacity(0.3)
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    canvas.drawPath(linePath, glowPaint);
+
+    // Draw data points
+    final pointPaint = Paint()
+      ..color = lineColor
+      ..style = PaintingStyle.fill;
+
+    for (int i = 0; i < values.length; i++) {
+      final x = (i / (values.length - 1)) * width + padding;
+      final normalizedValue = (values[i] - minValue) / range;
+      final y = (1 - normalizedValue) * height + padding;
+
+      canvas.drawCircle(Offset(x, y), 3, pointPaint);
+      
+      // Draw white center for points
+      final centerPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(x, y), 1.5, centerPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_LineChartPainter oldDelegate) => true;
 }

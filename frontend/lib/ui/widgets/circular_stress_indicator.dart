@@ -159,7 +159,13 @@ class _CircularStressIndicatorState extends State<CircularStressIndicator>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                                 ],
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: const TextStyle(fontSize: 12, color: Colors.white54),
+                  ),
+
+                ],
               ),
             ),
           ],

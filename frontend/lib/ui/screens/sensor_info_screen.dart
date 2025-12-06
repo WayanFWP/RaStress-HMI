@@ -3,12 +3,12 @@ import '../widgets/stat_card.dart';
 import '../widgets/section_title.dart';
 import '../widgets/waveform_chart.dart';
 import '../widgets/sensor_information.dart';
+import '../widgets/waveform_chart.dart';
 import '../../core/websocket_services.dart';
 import '../../core/waveform_service.dart';
 import '../../core/sensor_model.dart';
 import 'dart:async';
 import 'dart:math';
-import '../widgets/stat_card_w_chart.dart';
 
 class SensorInfoScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -94,8 +94,7 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
   void _startUIUpdateTimer() {
     _uiUpdateTimer = Timer.periodic(_uiUpdateInterval, (timer) {
       if (_pendingUIUpdate && mounted) {
-        setState(() {
-        });
+        setState(() {});
         _pendingUIUpdate = false;
       }
     });
@@ -112,12 +111,6 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Sensor Information",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-
               _buildSensorInfoWidget(data),
               const SizedBox(height: 20),
 
@@ -154,10 +147,7 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
         rangeProfile = maxIndex;
 
         // Calculate max range based on sensor specifications
-        maxRange =
-            0.3 +
-            (data.rangeProfile.length / 64.0) *
-                2.2; // Assuming 64 bins cover ~2.5m
+        maxRange = 0.3 + (data.rangeProfile.length / 64.0) * 2.2;
       }
 
       // Calculate signal quality based on energy levels
@@ -183,17 +173,14 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
             heartWaveform.length,
             (i) =>
                 0.5 +
-                0.25 *
-                    sin(
-                      2 * pi * i / 25 + (data.chestDisplacement / 10),
-                    ), // phase shift
+                0.25 * sin(2 * pi * i / 25 + (data.chestDisplacement / 10)),
           )
         : <double>[];
 
     return Column(
       children: [
-        // Heart Rate Card with Waveform
-        StatCardWithWaveform(
+        // Heart Rate Card with Enhanced Waveform
+        WaveFormCard(
           icon: Icons.favorite,
           color: Colors.redAccent,
           label: "Heart Rate",
@@ -202,11 +189,14 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
           waveformData: heartWaveform.isNotEmpty
               ? heartWaveform
               : List.generate(120, (i) => 0.5 + 0.3 * sin(2 * pi * i / 20)),
+          yAxisLabel: "Normalized Amplitude (a.u.)",
+          minYValue: 0,
+          maxYValue: 100,
         ),
         const SizedBox(height: 14),
 
-        // Breathing Card with Waveform
-        StatCardWithWaveform(
+        // Breathing Rate Card with Enhanced Waveform
+        WaveFormCard(
           icon: Icons.air,
           color: const Color(0xFF2BE4DC),
           label: "Breathing Rate",
@@ -215,19 +205,25 @@ class _SensorInfoScreenState extends State<SensorInfoScreen> {
           waveformData: breathWaveform.isNotEmpty
               ? breathWaveform
               : List.generate(120, (i) => 0.5 + 0.2 * sin(2 * pi * i / 30)),
+          yAxisLabel: "Normalized Amplitude (a.u.)",
+          minYValue: 0,
+          maxYValue: 100,
         ),
         const SizedBox(height: 14),
 
-        // Chest Displacement Card with Waveform
-        StatCardWithWaveform(
-          icon: Icons.start,
+        // Chest Displacement Card with Enhanced Waveform
+        WaveFormCard(
+          icon: Icons.straighten,
           color: const Color.fromARGB(255, 75, 185, 24),
           label: "Chest Displacement",
-          value: "${data?.chestDisplacement.toInt() ?? 0}",
-          unit: "a.u",
+          value: "${data?.chestDisplacement.toStringAsFixed(1) ?? '0.0'}",
+          unit: "mm",
           waveformData: chestDisplacement.isNotEmpty
               ? chestDisplacement
               : List.generate(120, (i) => 0.5 + 0.25 * sin(2 * pi * i / 25)),
+          yAxisLabel: "Displacement (millimeters)",
+          minYValue: 0,
+          maxYValue: 10,
         ),
       ],
     );
