@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum AppThemeMode { neon, dark, light, nightOwl }
+enum AppThemeMode { neon, dark, nightOwl }
 
 enum FontSize { small, medium, large }
 
@@ -95,36 +95,6 @@ class AppTheme {
         secondary: Color(0xFFCCCCCC),
         surface: Color(0xFF1A1A1A),
         background: Color(0xFF000000),
-      ),
-    );
-  }
-
-  // Light Theme
-  static ThemeData lightTheme({
-    FontSize fontSize = FontSize.medium,
-    bool isDyslexic = false,
-    ColorBlindMode colorBlindMode = ColorBlindMode.none,
-  }) {
-    final fontMultiplier = getFontSizeMultiplier(fontSize);
-    final fontFamily = isDyslexic ? "OpenDyslexic" : "SF Pro";
-
-    return ThemeData(
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-      fontFamily: fontFamily,
-      useMaterial3: true,
-      textTheme: _buildTextTheme(fontMultiplier, fontFamily),
-      colorScheme: ColorScheme.light(
-        primary: adjustColorForColorBlind(
-          const Color(0xFF00BFA5),
-          colorBlindMode,
-        ),
-        secondary: adjustColorForColorBlind(
-          const Color(0xFF6200EA),
-          colorBlindMode,
-        ),
-        surface: const Color(0xFFFFFFFF),
-        background: const Color(0xFFF5F5F5),
       ),
     );
   }

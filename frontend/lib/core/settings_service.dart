@@ -75,12 +75,6 @@ class SettingsService extends ChangeNotifier {
           isDyslexic: _isDyslexic,
           colorBlindMode: _colorBlindMode,
         );
-      case AppThemeMode.light:
-        return AppTheme.lightTheme(
-          fontSize: _fontSize,
-          isDyslexic: _isDyslexic,
-          colorBlindMode: _colorBlindMode,
-        );
       case AppThemeMode.nightOwl:
         return AppTheme.nightOwlTheme(
           fontSize: _fontSize,
