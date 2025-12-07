@@ -105,7 +105,7 @@ class _CircularStressIndicatorState extends State<CircularStressIndicator>
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF151B2D),
+          color:  Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: levelColor.withOpacity(0.3), width: 2),
         ),

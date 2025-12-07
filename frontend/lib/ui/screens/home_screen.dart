@@ -97,8 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(UIConstants.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -115,190 +115,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 stressData: stressData,
                 vitalsSnapshot: widget.stressLevelService.currentVitals.value,
                 isReceivingData: isReceivingData,
-                stressLevelService: widget.stressLevelService, // Add this line
+                stressLevelService: widget.stressLevelService,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.largeSpacing),
 
               // Compact Vital Averages Card - Tappable
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TrendDetailScreen(
-                        trendService: widget.trendService,
-                        webSocketService: widget.webSocketService,
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF151B2D),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: const Color(0xFF2BE4DC).withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Vital Trends Summary",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: const Color(0xFF2BE4DC),
-                            size: 18,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Heart Rate Average
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.favorite,
-                            color: Colors.redAccent,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Heart Rate",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              trendData.isEmpty
-                                  ? const Text(
-                                      "-- BPM",
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        color: Colors.white38,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : Text(
-                                      "${avgHeartRate.toStringAsFixed(1)} BPM",
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        color: Colors.redAccent,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Breathing Rate Average
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.air,
-                            color: const Color(0xFF2BE4DC),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Breathing Rate",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              trendData.isEmpty
-                                  ? const Text(
-                                      "-- breaths/min",
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        color: Colors.white38,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : Text(
-                                      "${avgBreathRate.toStringAsFixed(1)} breaths/min",
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        color: Color(0xFF2BE4DC),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Hint to tap
-                      Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.touch_app,
-                              color: Colors.white38,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Tap to view detailed trends",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white38,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              _buildVitalTrendsCard(
+                context,
+                trendData,
+                avgHeartRate,
+                avgBreathRate,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Info text when no data
-              if (trendData.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        Icon(Icons.timeline, size: 64, color: Colors.white24),
-                        const SizedBox(height: 16),
-                        Text(
-                          "Collecting data...\nAverages will appear after 3 seconds",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white54, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              if (trendData.isEmpty) _buildNoDataInfo(),
+              
+              // Add some bottom padding for safe scrolling
+              const SizedBox(height: UIConstants.extraLargeSpacing),
             ],
           ),
         ),
@@ -347,6 +183,178 @@ class _HomeScreenState extends State<HomeScreen> {
             fontWeight: FontWeight.bold,
             color: Colors.orange,
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Build vital trends summary card
+  Widget _buildVitalTrendsCard(
+    BuildContext context,
+    List<TrendDataPoint> trendData,
+    double avgHeartRate,
+    double avgBreathRate,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TrendDetailScreen(
+              trendService: widget.trendService,
+              webSocketService: widget.webSocketService,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(UIConstants.cardPadding),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.primary.withOpacity(
+              UIConstants.mediumOpacity,
+            ),
+            width: UIConstants.mediumBorder,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Vital Trends Summary",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: UIConstants.smallIconSize,
+                ),
+              ],
+            ),
+            const SizedBox(height: UIConstants.cardPadding),
+
+            // Heart Rate Average
+            _buildVitalRow(
+              context,
+              Icons.favorite,
+              Colors.redAccent,
+              "Heart Rate",
+              trendData.isEmpty ? "--" : avgHeartRate.toStringAsFixed(1),
+              "BPM",
+              trendData.isEmpty,
+            ),
+            const SizedBox(height: UIConstants.largeSpacing),
+
+            // Breathing Rate Average
+            _buildVitalRow(
+              context,
+              Icons.air,
+              const Color(0xFF2BE4DC),
+              "Breathing Rate",
+              trendData.isEmpty ? "--" : avgBreathRate.toStringAsFixed(1),
+              "breaths/min",
+              trendData.isEmpty,
+            ),
+            const SizedBox(height: UIConstants.largeSpacing),
+
+            // Hint to tap
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.touch_app,
+                    color: UIConstants.getSecondaryText(context).withOpacity(0.5),
+                    size: UIConstants.smallIconSize,
+                  ),
+                  const SizedBox(width: UIConstants.smallSpacing),
+                  Text(
+                    "Tap to view detailed trends",
+                    style: TextStyle(
+                      fontSize: UIConstants.captionFontSize,
+                      color: UIConstants.getSecondaryText(context).withOpacity(0.5),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build a single vital sign row
+  Widget _buildVitalRow(
+    BuildContext context,
+    IconData icon,
+    Color color,
+    String label,
+    String value,
+    String unit,
+    bool isEmpty,
+  ) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: UIConstants.largeIconSize),
+        const SizedBox(width: UIConstants.mediumSpacing),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: UIConstants.bodyFontSize,
+                color: UIConstants.getSecondaryText(context),
+              ),
+            ),
+            const SizedBox(height: UIConstants.tinySpacing),
+            Text(
+              isEmpty ? "$value $unit" : "$value $unit",
+              style: TextStyle(
+                fontSize: UIConstants.displayFontSize - 8,
+                color: isEmpty 
+                    ? UIConstants.getSecondaryText(context).withOpacity(0.3)
+                    : color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Build no data information widget
+  Widget _buildNoDataInfo() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(UIConstants.cardPadding * 1.5),
+        child: Column(
+          children: [
+            Icon(
+              Icons.timeline,
+              size: UIConstants.extraLargeIconSize * 2,
+              color: UIConstants.getSecondaryText(context).withOpacity(0.3),
+            ),
+            const SizedBox(height: UIConstants.largeSpacing),
+            Text(
+              "Collecting data...\nAverages will appear after 3 seconds",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: UIConstants.getSecondaryText(context),
+                fontSize: UIConstants.bodyFontSize,
+              ),
+            ),
+          ],
         ),
       ),
     );
