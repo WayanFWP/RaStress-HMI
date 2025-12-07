@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
 
-enum AppThemeMode {
-  neon,
-  dark,
-  light,
-  nightOwl,
-}
+enum AppThemeMode { neon, dark, light, nightOwl }
 
-enum FontSize {
-  small,
-  medium,
-  large,
-}
+enum FontSize { small, medium, large }
 
 enum ColorBlindMode {
   none,
@@ -38,7 +29,7 @@ class AppTheme {
     if (mode == ColorBlindMode.none) return original;
 
     final hsv = HSVColor.fromColor(original);
-    
+
     switch (mode) {
       case ColorBlindMode.protanopia:
         // Adjust red hues to be more distinguishable
@@ -70,8 +61,14 @@ class AppTheme {
       useMaterial3: true,
       textTheme: _buildTextTheme(fontMultiplier, fontFamily),
       colorScheme: ColorScheme.dark(
-        primary: adjustColorForColorBlind(const Color(0xFF2BE4DC), colorBlindMode),
-        secondary: adjustColorForColorBlind(const Color(0xFF7B61FF), colorBlindMode),
+        primary: adjustColorForColorBlind(
+          const Color(0xFF2BE4DC),
+          colorBlindMode,
+        ),
+        secondary: adjustColorForColorBlind(
+          const Color(0xFF7B61FF),
+          colorBlindMode,
+        ),
         surface: const Color(0xFF151B2D),
         background: const Color(0xFF0A0F1C),
       ),
@@ -118,8 +115,14 @@ class AppTheme {
       useMaterial3: true,
       textTheme: _buildTextTheme(fontMultiplier, fontFamily),
       colorScheme: ColorScheme.light(
-        primary: adjustColorForColorBlind(const Color(0xFF00BFA5), colorBlindMode),
-        secondary: adjustColorForColorBlind(const Color(0xFF6200EA), colorBlindMode),
+        primary: adjustColorForColorBlind(
+          const Color(0xFF00BFA5),
+          colorBlindMode,
+        ),
+        secondary: adjustColorForColorBlind(
+          const Color(0xFF6200EA),
+          colorBlindMode,
+        ),
         surface: const Color(0xFFFFFFFF),
         background: const Color(0xFFF5F5F5),
       ),
@@ -142,8 +145,14 @@ class AppTheme {
       useMaterial3: true,
       textTheme: _buildTextTheme(fontMultiplier, fontFamily),
       colorScheme: ColorScheme.dark(
-        primary: adjustColorForColorBlind(const Color(0xFF82AAFF), colorBlindMode),
-        secondary: adjustColorForColorBlind(const Color(0xFFC792EA), colorBlindMode),
+        primary: adjustColorForColorBlind(
+          const Color(0xFF82AAFF),
+          colorBlindMode,
+        ),
+        secondary: adjustColorForColorBlind(
+          const Color(0xFFC792EA),
+          colorBlindMode,
+        ),
         surface: const Color(0xFF0B2942),
         background: const Color(0xFF011627),
       ),
@@ -152,12 +161,30 @@ class AppTheme {
 
   static TextTheme _buildTextTheme(double multiplier, String fontFamily) {
     return TextTheme(
-      displayLarge: TextStyle(fontSize: 57 * multiplier, fontFamily: fontFamily),
-      displayMedium: TextStyle(fontSize: 45 * multiplier, fontFamily: fontFamily),
-      displaySmall: TextStyle(fontSize: 36 * multiplier, fontFamily: fontFamily),
-      headlineLarge: TextStyle(fontSize: 32 * multiplier, fontFamily: fontFamily),
-      headlineMedium: TextStyle(fontSize: 28 * multiplier, fontFamily: fontFamily),
-      headlineSmall: TextStyle(fontSize: 24 * multiplier, fontFamily: fontFamily),
+      displayLarge: TextStyle(
+        fontSize: 57 * multiplier,
+        fontFamily: fontFamily,
+      ),
+      displayMedium: TextStyle(
+        fontSize: 45 * multiplier,
+        fontFamily: fontFamily,
+      ),
+      displaySmall: TextStyle(
+        fontSize: 36 * multiplier,
+        fontFamily: fontFamily,
+      ),
+      headlineLarge: TextStyle(
+        fontSize: 32 * multiplier,
+        fontFamily: fontFamily,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: 28 * multiplier,
+        fontFamily: fontFamily,
+      ),
+      headlineSmall: TextStyle(
+        fontSize: 24 * multiplier,
+        fontFamily: fontFamily,
+      ),
       titleLarge: TextStyle(fontSize: 22 * multiplier, fontFamily: fontFamily),
       titleMedium: TextStyle(fontSize: 16 * multiplier, fontFamily: fontFamily),
       titleSmall: TextStyle(fontSize: 14 * multiplier, fontFamily: fontFamily),

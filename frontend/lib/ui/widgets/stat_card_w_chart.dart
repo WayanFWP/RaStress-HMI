@@ -60,7 +60,7 @@ class StatCardWithWaveform extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Waveform chart
           SizedBox(
             height: 80,
@@ -102,7 +102,7 @@ class _MiniWaveformPainter extends CustomPainter {
 
     // Create line path
     final linePath = Path();
-    
+
     // Create fill path
     final fillPath = Path();
     fillPath.moveTo(padding, size.height - padding);

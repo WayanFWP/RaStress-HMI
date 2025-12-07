@@ -35,7 +35,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _waveformService = WaveformService();
     _trendService = TrendService();
     _stressLevelService = StressLevelService();
-    
+
     _webSocketService.connect();
 
     // Process waveform data in background continuously

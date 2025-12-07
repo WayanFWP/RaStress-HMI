@@ -104,10 +104,7 @@ class WaveFormCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: CustomPaint(
-                          painter: _WaveFormPainter(
-                            waveformData,
-                            color,
-                          ),
+                          painter: _WaveFormPainter(waveformData, color),
                           size: const Size(double.infinity, double.infinity),
                         ),
                       ),
@@ -191,7 +188,13 @@ class _WaveFormPainter extends CustomPainter {
     _drawWaveformLine(canvas, size, width, height, padding);
   }
 
-  void _drawGrid(Canvas canvas, Size size, double width, double height, double padding) {
+  void _drawGrid(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+  ) {
     final gridPaint = Paint()
       ..color = Colors.white.withOpacity(0.08)
       ..strokeWidth = 1
@@ -229,17 +232,20 @@ class _WaveFormPainter extends CustomPainter {
     );
   }
 
-  void _drawFilledArea(Canvas canvas, Size size, double width, double height, double padding) {
+  void _drawFilledArea(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+  ) {
     if (data.isEmpty) return;
 
     final fillPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          color.withOpacity(0.3),
-          color.withOpacity(0.05),
-        ],
+        colors: [color.withOpacity(0.3), color.withOpacity(0.05)],
       ).createShader(Rect.fromLTWH(padding, padding, width, height))
       ..style = PaintingStyle.fill;
 
@@ -258,7 +264,13 @@ class _WaveFormPainter extends CustomPainter {
     canvas.drawPath(fillPath, fillPaint);
   }
 
-  void _drawWaveformLine(Canvas canvas, Size size, double width, double height, double padding) {
+  void _drawWaveformLine(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+  ) {
     if (data.isEmpty) return;
 
     final linePaint = Paint()

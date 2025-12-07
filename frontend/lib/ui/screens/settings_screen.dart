@@ -81,11 +81,18 @@ class SettingsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -215,7 +222,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFontSizeSelector(BuildContext context, SettingsService settings) {
+  Widget _buildFontSizeSelector(
+    BuildContext context,
+    SettingsService settings,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -234,7 +244,9 @@ class SettingsScreen extends StatelessWidget {
     String sample,
   ) {
     final isSelected = settings.fontSize == size;
-    final fontSize = size == FontSize.small ? 16.0 : (size == FontSize.medium ? 20.0 : 24.0);
+    final fontSize = size == FontSize.small
+        ? 16.0
+        : (size == FontSize.medium ? 20.0 : 24.0);
 
     return Expanded(
       child: Padding(
@@ -295,7 +307,10 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 "Uses OpenDyslexic font for better readability",
-                style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.6)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.6),
+                ),
               ),
             ],
           ),
@@ -309,7 +324,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildColorBlindSelector(BuildContext context, SettingsService settings) {
+  Widget _buildColorBlindSelector(
+    BuildContext context,
+    SettingsService settings,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -327,14 +345,14 @@ class SettingsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.white24),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
           dropdownColor: Theme.of(context).colorScheme.surface,
           items: [
-            DropdownMenuItem(
-              value: ColorBlindMode.none,
-              child: Text("None"),
-            ),
+            DropdownMenuItem(value: ColorBlindMode.none, child: Text("None")),
             DropdownMenuItem(
               value: ColorBlindMode.protanopia,
               child: Text("Protanopia (Red-Blind)"),

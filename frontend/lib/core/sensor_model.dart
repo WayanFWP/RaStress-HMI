@@ -31,9 +31,7 @@ class SensorData {
       breathWaveform: vitals["outputFilterBreathOut"]?.toDouble() ?? 0.0,
       chestDisplacement: vitals["unwrapPhasePeak_mm"]?.toDouble() ?? 0.0,
       rangeProfile: (vitals["RangeProfile"] != null)
-          ? List<double>.from(
-              vitals["RangeProfile"].map((v) => v.toDouble()),
-            )
+          ? List<double>.from(vitals["RangeProfile"].map((v) => v.toDouble()))
           : [],
     );
   }

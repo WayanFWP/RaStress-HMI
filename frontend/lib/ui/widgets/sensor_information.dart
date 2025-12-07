@@ -205,7 +205,10 @@ class SensorInfoWidget extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                           gradient: LinearGradient(
                             stops: [percentage / 100, percentage / 100],
-                            colors: [Colors.transparent, Colors.grey.withOpacity(0.8)],
+                            colors: [
+                              Colors.transparent,
+                              Colors.grey.withOpacity(0.8),
+                            ],
                           ),
                         ),
                       ),
@@ -241,7 +244,11 @@ class SensorInfoWidget extends StatelessWidget {
           // Info Text
           Row(
             children: [
-              Icon(Icons.info_outline, color: const Color(0xFF2BE4DC), size: 16),
+              Icon(
+                Icons.info_outline,
+                color: const Color(0xFF2BE4DC),
+                size: 16,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
