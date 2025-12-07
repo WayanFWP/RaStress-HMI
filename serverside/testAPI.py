@@ -15,7 +15,9 @@ import pyqtgraph as pg
 from mmvs.com import serialConfig, parseConfigFile
 
 load_dotenv()
-WS_RELAY_URL = os.getenv("WS_RELAY_URL")  # set your relay server here
+IP=os.getenv("IP")
+PORT=os.getenv("PORT")
+WS_RELAY_URL = os.getenv(f"ws://{IP}:{PORT}")  # set your relay server here
 WS_SEND_QUEUE_MAX = 1000
 
 # -------------------- SHARED BUFFERS / STATE --------------------
