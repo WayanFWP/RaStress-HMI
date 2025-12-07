@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/trend_service.dart';
 import '../../core/websocket_services.dart';
+import '../../core/trend_export_service.dart';
+import '../widgets/shareable_trend_chart.dart';
 import 'package:intl/intl.dart';
 
 class TrendDetailScreen extends StatefulWidget {
@@ -18,6 +20,9 @@ class TrendDetailScreen extends StatefulWidget {
 }
 
 class _TrendDetailScreenState extends State<TrendDetailScreen> {
+  final GlobalKey _chartKey = GlobalKey();
+  bool _isExporting = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,15 +38,156 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
   }
 
   void _onTrendUpdate() {
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   void _onConnectionUpdate() {
-    if (mounted) {
-      setState(() {});
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _shareToWhatsApp() async {
+    final trendData = widget.trendService.trendData.value;
+
+    if (trendData.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No data available to share'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
     }
+
+    setState(() => _isExporting = true);
+
+    try {
+      // Show preview dialog with shareable chart
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => _buildExportDialog(trendData),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error sharing: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isExporting = false);
+    }
+  }
+
+  Widget _buildExportDialog(List<TrendDataPoint> trendData) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.95,
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: Column(
+          children: [
+            // Preview with proper landscape scaling
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF2BE4DC).withOpacity(0.3),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SingleChildScrollView(
+                    scrollDirection:
+                        Axis.horizontal, // Allow horizontal scrolling
+                    child: SingleChildScrollView(
+                      scrollDirection:
+                          Axis.vertical, // Allow vertical scrolling
+                      child: RepaintBoundary(
+                        key: _chartKey,
+                        child: ShareableTrendChart(trendData: trendData),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Info text
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: const Color(0xFF2BE4DC),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Landscape format • 1920x1080 • Scroll to preview',
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                  label: const Text('Cancel'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[800],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await TrendExportService.shareToWhatsApp(
+                      _chartKey,
+                      trendData,
+                    );
+                    Navigator.pop(context);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Opening share dialog...'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.share),
+                  label: const Text('Share'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366), // WhatsApp green
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -52,17 +198,64 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Vital Trends"),
-        backgroundColor: const Color(0xFF151B2D),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          // Share button
+          IconButton(
+            onPressed: _isExporting ? null : _shareToWhatsApp,
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.share),
+            tooltip: 'Share to WhatsApp',
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(18),
           child: Column(
             children: [
+              // Info banner
+              if (trendData.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2BE4DC).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF2BE4DC).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline,
+                        color: Color(0xFF2BE4DC),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Tap the share button to export your trends',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Heart Rate Trend
               _buildTrendCard(
                 title: "Heart Rate",
@@ -118,7 +311,6 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     required List<TrendDataPoint> data,
     required bool isHeartRate,
   }) {
-    // Calculate average value
     double avgValue = 0;
 
     if (data.isNotEmpty) {
@@ -129,20 +321,22 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     }
 
     return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with icon, label and average value
           Row(
             children: [
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.white,
-                ),
+                style: const TextStyle(fontSize: 15, color: Colors.white),
               ),
               const Spacer(),
               Text(
@@ -161,7 +355,6 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
             ],
           ),
           const SizedBox(height: 20),
-
           data.isEmpty
               ? SizedBox(
                   height: 120,
@@ -191,12 +384,10 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     final maxValue = values.reduce((a, b) => a > b ? a : b);
     final minValue = values.reduce((a, b) => a < b ? a : b);
 
-    // Time formatter
     final timeFormat = DateFormat('HH:mm:ss');
 
     return Column(
       children: [
-        // Line chart with grid background
         SizedBox(
           height: 120,
           child: CustomPaint(
@@ -210,23 +401,18 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
           ),
         ),
         const SizedBox(height: 12),
-
-        // Timestamps
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // First timestamp (left)
             Text(
               timeFormat.format(data.first.timestamp),
               style: const TextStyle(fontSize: 11, color: Colors.white54),
             ),
-            // Middle timestamp (center) - only if we have enough data
             if (data.length > 2)
               Text(
                 timeFormat.format(data[data.length ~/ 2].timestamp),
                 style: const TextStyle(fontSize: 11, color: Colors.white54),
               ),
-            // Last timestamp (right)
             Text(
               timeFormat.format(data.last.timestamp),
               style: const TextStyle(fontSize: 11, color: Colors.white54),
@@ -255,7 +441,7 @@ class _LineChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
 
-  const padding = 0.0;
+    const padding = 0.0;
     final width = size.width - padding * 2;
     final height = size.height - padding * 2;
 
@@ -305,20 +491,29 @@ class _LineChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     canvas.drawRect(
-      Rect.fromLTWH(padding, padding, size.width - padding * 2, size.height - padding * 2),
+      Rect.fromLTWH(
+        padding,
+        padding,
+        size.width - padding * 2,
+        size.height - padding * 2,
+      ),
       borderPaint,
     );
   }
 
-  void _drawFilledArea(Canvas canvas, Size size, double width, double height, double padding, double range) {
+  void _drawFilledArea(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+    double range,
+  ) {
     final fillPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          lineColor.withOpacity(0.3),
-          lineColor.withOpacity(0.05),
-        ],
+        colors: [lineColor.withOpacity(0.3), lineColor.withOpacity(0.05)],
       ).createShader(Rect.fromLTWH(padding, padding, width, height))
       ..style = PaintingStyle.fill;
 
@@ -338,7 +533,14 @@ class _LineChartPainter extends CustomPainter {
     canvas.drawPath(fillPath, fillPaint);
   }
 
-  void _drawLine(Canvas canvas, Size size, double width, double height, double padding, double range) {
+  void _drawLine(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+    double range,
+  ) {
     final linePaint = Paint()
       ..color = lineColor
       ..strokeWidth = 2.5
@@ -384,7 +586,7 @@ class _LineChartPainter extends CustomPainter {
       final y = (1 - normalizedValue) * height + padding;
 
       canvas.drawCircle(Offset(x, y), 3, pointPaint);
-      
+
       // Draw white center for points
       final centerPaint = Paint()
         ..color = Colors.white
