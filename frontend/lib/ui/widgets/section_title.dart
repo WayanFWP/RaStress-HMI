@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/ui_constants.dart';
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -21,12 +22,18 @@ class SectionTitle extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontSize: 18)),
+            Icon(icon, color: color, size: UIConstants.mediumIconSize),
+            const SizedBox(width: UIConstants.smallPadding),
+            Text(
+              title,
+              style: const TextStyle(fontSize: UIConstants.titleFontSize),
+            ),
           ],
         ),
-        Text(subtitle, style: TextStyle(color: color, fontSize: 14)),
+        Text(
+          subtitle,
+          style: TextStyle(color: color, fontSize: UIConstants.bodyFontSize),
+        ),
       ],
     );
   }

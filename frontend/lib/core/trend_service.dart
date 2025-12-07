@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'sensor_model.dart';
+import 'constants/app_constants.dart';
 
 class TrendDataPoint {
   final DateTime timestamp;
@@ -12,50 +13,65 @@ class TrendDataPoint {
     required this.heartRate,
     required this.breathRate,
   });
+
+  @override
+  String toString() =>
+      'TrendDataPoint(time: $timestamp, HR: ${heartRate.toStringAsFixed(1)}, BR: ${breathRate.toStringAsFixed(1)})';
 }
 
 class TrendService {
   final ValueNotifier<List<TrendDataPoint>> trendData = ValueNotifier([]);
-  
+
   Timer? _aggregationTimer;
-  List<double> _heartRateBuffer = [];
-  List<double> _breathRateBuffer = [];
-  
-  // Store data every 3 seconds for 5 minutes (100 data points)
-  static const Duration _aggregationInterval = Duration(seconds: 3);
-  static const int _maxDataPoints = 100; // 5 minutes / 3 seconds
+  final List<double> _heartRateBuffer = [];
+  final List<double> _breathRateBuffer = [];
 
   TrendService() {
     _startAggregation();
   }
 
   void _startAggregation() {
-    _aggregationTimer = Timer.periodic(_aggregationInterval, (timer) {
-      if (_heartRateBuffer.isNotEmpty && _breathRateBuffer.isNotEmpty) {
-        // Calculate average for this interval
-        final avgHeartRate = _heartRateBuffer.reduce((a, b) => a + b) / _heartRateBuffer.length;
-        final avgBreathRate = _breathRateBuffer.reduce((a, b) => a + b) / _breathRateBuffer.length;
-        
-        // Add new data point
-        final newData = List<TrendDataPoint>.from(trendData.value);
-        newData.add(TrendDataPoint(
-          timestamp: DateTime.now(),
-          heartRate: avgHeartRate,
-          breathRate: avgBreathRate,
-        ));
-        
-        // Keep only last 36 data points (3 minutes)
-        if (newData.length > _maxDataPoints) {
-          newData.removeAt(0);
-        }
-        
-        trendData.value = newData;
-        
-        // Clear buffers
-        _heartRateBuffer.clear();
-        _breathRateBuffer.clear();
-      }
-    });
+    _aggregationTimer = Timer.periodic(
+      AppConstants.trendAggregationInterval,
+      (_) => _aggregateData(),
+    );
+  }
+
+  void _aggregateData() {
+    if (_heartRateBuffer.isEmpty || _breathRateBuffer.isEmpty) return;
+
+    final avgHeartRate = _calculateAverage(_heartRateBuffer);
+    final avgBreathRate = _calculateAverage(_breathRateBuffer);
+
+    _addTrendPoint(avgHeartRate, avgBreathRate);
+    _clearBuffers();
+  }
+
+  double _calculateAverage(List<double> values) {
+    return values.reduce((a, b) => a + b) / values.length;
+  }
+
+  void _addTrendPoint(double heartRate, double breathRate) {
+    final newData = List<TrendDataPoint>.from(trendData.value);
+    newData.add(
+      TrendDataPoint(
+        timestamp: DateTime.now(),
+        heartRate: heartRate,
+        breathRate: breathRate,
+      ),
+    );
+
+    // Keep only recent data points
+    if (newData.length > AppConstants.trendDataMaxPoints) {
+      newData.removeAt(0);
+    }
+
+    trendData.value = newData;
+  }
+
+  void _clearBuffers() {
+    _heartRateBuffer.clear();
+    _breathRateBuffer.clear();
   }
 
   void addSensorData(SensorData data) {

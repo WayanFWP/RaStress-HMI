@@ -7,7 +7,6 @@ import '../../core/websocket_services.dart';
 import '../../core/waveform_service.dart';
 import '../../core/trend_service.dart';
 import '../../core/stress_level_service.dart';
-import '../../core/sensor_model.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -35,7 +34,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _waveformService = WaveformService();
     _trendService = TrendService();
     _stressLevelService = StressLevelService();
-    
+
     _webSocketService.connect();
 
     // Process waveform data in background continuously

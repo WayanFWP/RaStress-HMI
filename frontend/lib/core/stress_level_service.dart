@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'sensor_model.dart';
+import 'constants/app_constants.dart';
 
-enum StressLevel {
-  relaxed,
-  normal,
-  highStress,
-}
+enum StressLevel { relaxed, normal, highStress }
 
 enum AlertType {
   highHeartRate,
@@ -59,37 +56,30 @@ class VitalsSnapshot {
 }
 
 class StressLevelService {
-  final ValueNotifier<StressLevelData?> currentStressLevel = ValueNotifier(null);
+  final ValueNotifier<StressLevelData?> currentStressLevel = ValueNotifier(
+    null,
+  );
   final ValueNotifier<VitalsSnapshot?> currentVitals = ValueNotifier(null);
   final ValueNotifier<List<VitalAlert>> activeAlerts = ValueNotifier([]);
 
   // Buffers for averaging data over time
-  List<double> _heartRateBuffer = [];
-  List<double> _breathRateBuffer = [];
-  List<double> _heartEnergyBuffer = [];
-  List<double> _breathEnergyBuffer = [];
-  List<double> _chestDisplacementBuffer = [];
+  final List<double> _heartRateBuffer = [];
+  final List<double> _breathRateBuffer = [];
+  final List<double> _heartEnergyBuffer = [];
+  final List<double> _breathEnergyBuffer = [];
+  final List<double> _chestDisplacementBuffer = [];
 
   Timer? _analysisTimer;
   double? _lastChestDisplacement;
-
-  // Analysis interval - analyze every 5 seconds
-  static const Duration _analysisInterval = Duration(seconds: 5);
-  static const int _bufferSize = 100; // ~5 seconds at 20Hz
-
-  // Alert thresholds
-  static const double highHeartRateThreshold = 100.0;
-  static const double lowHeartRateThreshold = 50.0;
-  static const double highBreathingRateThreshold = 25.0;
-  static const double lowBreathingRateThreshold = 10.0;
-  static const double suddenDisplacementThreshold = 5.0; // mm
 
   StressLevelService() {
     _startAnalysis();
   }
 
   void _startAnalysis() {
-    _analysisTimer = Timer.periodic(_analysisInterval, (timer) {
+    _analysisTimer = Timer.periodic(AppConstants.stressAnalysisInterval, (
+      timer,
+    ) {
       if (_heartRateBuffer.isNotEmpty &&
           _breathRateBuffer.isNotEmpty &&
           _heartEnergyBuffer.isNotEmpty &&
@@ -110,7 +100,7 @@ class StressLevelService {
     _chestDisplacementBuffer.add(data.chestDisplacement);
 
     // Keep buffer size limited
-    if (_heartRateBuffer.length > _bufferSize) {
+    if (_heartRateBuffer.length > AppConstants.sensorDataBufferSize) {
       _heartRateBuffer.removeAt(0);
       _breathRateBuffer.removeAt(0);
       _heartEnergyBuffer.removeAt(0);
@@ -120,56 +110,75 @@ class StressLevelService {
   }
 
   void _checkVitalAlerts() {
-    final avgHeartRate = _heartRateBuffer.reduce((a, b) => a + b) / _heartRateBuffer.length;
-    final avgBreathRate = _breathRateBuffer.reduce((a, b) => a + b) / _breathRateBuffer.length;
-    final avgChestDisplacement = _chestDisplacementBuffer.reduce((a, b) => a + b) / _chestDisplacementBuffer.length;
+    final avgHeartRate =
+        _heartRateBuffer.reduce((a, b) => a + b) / _heartRateBuffer.length;
+    final avgBreathRate =
+        _breathRateBuffer.reduce((a, b) => a + b) / _breathRateBuffer.length;
+    final avgChestDisplacement =
+        _chestDisplacementBuffer.reduce((a, b) => a + b) /
+        _chestDisplacementBuffer.length;
 
     List<VitalAlert> newAlerts = [];
 
     // Check heart rate alerts
-    if (avgHeartRate > highHeartRateThreshold) {
-      newAlerts.add(VitalAlert(
-        type: AlertType.highHeartRate,
-        message: "Heart rate elevated above ${highHeartRateThreshold.toInt()} BPM",
-        value: avgHeartRate,
-        timestamp: DateTime.now(),
-      ));
-    } else if (avgHeartRate < lowHeartRateThreshold) {
-      newAlerts.add(VitalAlert(
-        type: AlertType.lowHeartRate,
-        message: "Heart rate below ${lowHeartRateThreshold.toInt()} BPM",
-        value: avgHeartRate,
-        timestamp: DateTime.now(),
-      ));
+    if (avgHeartRate > AppConstants.highHeartRateThreshold) {
+      newAlerts.add(
+        VitalAlert(
+          type: AlertType.highHeartRate,
+          message:
+              "Heart rate elevated above ${AppConstants.highHeartRateThreshold.toInt()} BPM",
+          value: avgHeartRate,
+          timestamp: DateTime.now(),
+        ),
+      );
+    } else if (avgHeartRate < AppConstants.lowHeartRateThreshold) {
+      newAlerts.add(
+        VitalAlert(
+          type: AlertType.lowHeartRate,
+          message:
+              "Heart rate below ${AppConstants.lowHeartRateThreshold.toInt()} BPM",
+          value: avgHeartRate,
+          timestamp: DateTime.now(),
+        ),
+      );
     }
 
     // Check breathing rate alerts
-    if (avgBreathRate > highBreathingRateThreshold) {
-      newAlerts.add(VitalAlert(
-        type: AlertType.highBreathingRate,
-        message: "Breathing rate elevated above ${highBreathingRateThreshold.toInt()} breaths/min",
-        value: avgBreathRate,
-        timestamp: DateTime.now(),
-      ));
-    } else if (avgBreathRate < lowBreathingRateThreshold) {
-      newAlerts.add(VitalAlert(
-        type: AlertType.lowBreathingRate,
-        message: "Breathing rate below ${lowBreathingRateThreshold.toInt()} breaths/min",
-        value: avgBreathRate,
-        timestamp: DateTime.now(),
-      ));
+    if (avgBreathRate > AppConstants.highBreathingRateThreshold) {
+      newAlerts.add(
+        VitalAlert(
+          type: AlertType.highBreathingRate,
+          message:
+              "Breathing rate elevated above ${AppConstants.highBreathingRateThreshold.toInt()} breaths/min",
+          value: avgBreathRate,
+          timestamp: DateTime.now(),
+        ),
+      );
+    } else if (avgBreathRate < AppConstants.lowBreathingRateThreshold) {
+      newAlerts.add(
+        VitalAlert(
+          type: AlertType.lowBreathingRate,
+          message:
+              "Breathing rate below ${AppConstants.lowBreathingRateThreshold.toInt()} breaths/min",
+          value: avgBreathRate,
+          timestamp: DateTime.now(),
+        ),
+      );
     }
 
     // Check sudden chest displacement (possible cough or motion)
     if (_lastChestDisplacement != null) {
-      final displacementChange = (avgChestDisplacement - _lastChestDisplacement!).abs();
-      if (displacementChange > suddenDisplacementThreshold) {
-        newAlerts.add(VitalAlert(
-          type: AlertType.suddenMovement,
-          message: "Sudden movement detected (possible cough or motion)",
-          value: displacementChange,
-          timestamp: DateTime.now(),
-        ));
+      final displacementChange =
+          (avgChestDisplacement - _lastChestDisplacement!).abs();
+      if (displacementChange > AppConstants.suddenDisplacementThreshold) {
+        newAlerts.add(
+          VitalAlert(
+            type: AlertType.suddenMovement,
+            message: "Sudden movement detected (possible cough or motion)",
+            value: displacementChange,
+            timestamp: DateTime.now(),
+          ),
+        );
       }
     }
     _lastChestDisplacement = avgChestDisplacement;
@@ -196,10 +205,15 @@ class StressLevelService {
 
   void _analyzeStressLevel() {
     // Calculate averages
-    final avgHeartRate = _heartRateBuffer.reduce((a, b) => a + b) / _heartRateBuffer.length;
-    final avgBreathRate = _breathRateBuffer.reduce((a, b) => a + b) / _breathRateBuffer.length;
-    final avgHeartEnergy = _heartEnergyBuffer.reduce((a, b) => a + b) / _heartEnergyBuffer.length;
-    final avgBreathEnergy = _breathEnergyBuffer.reduce((a, b) => a + b) / _breathEnergyBuffer.length;
+    final avgHeartRate =
+        _heartRateBuffer.reduce((a, b) => a + b) / _heartRateBuffer.length;
+    final avgBreathRate =
+        _breathRateBuffer.reduce((a, b) => a + b) / _breathRateBuffer.length;
+    final avgHeartEnergy =
+        _heartEnergyBuffer.reduce((a, b) => a + b) / _heartEnergyBuffer.length;
+    final avgBreathEnergy =
+        _breathEnergyBuffer.reduce((a, b) => a + b) /
+        _breathEnergyBuffer.length;
 
     // Stress indicators scoring
     int stressScore = 0;

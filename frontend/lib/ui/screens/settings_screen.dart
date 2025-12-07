@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/settings_service.dart';
 import '../themes/app_theme.dart';
+import '../constants/ui_constants.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -16,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
       body: Consumer<SettingsService>(
         builder: (context, settings, child) {
           return ListView(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(UIConstants.screenPadding),
             children: [
               // Theme Selection
               _buildSection(
@@ -25,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.palette,
                 child: _buildThemeSelector(context, settings),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Font Size
               _buildSection(
@@ -34,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.format_size,
                 child: _buildFontSizeSelector(context, settings),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Accessibility
               _buildSection(
@@ -44,12 +45,12 @@ class SettingsScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildDyslexicToggle(context, settings),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.mediumPadding),
                     _buildColorBlindSelector(context, settings),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Preview Card
               _buildPreviewCard(context),
@@ -81,15 +82,22 @@ class SettingsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
-              const SizedBox(width: 8),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.primary,
+                size: UIConstants.mediumIconSize,
+              ),
+              const SizedBox(width: UIConstants.smallPadding),
               Text(
                 title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: UIConstants.titleFontSize,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.mediumPadding),
           child,
         ],
       ),
@@ -108,7 +116,7 @@ class SettingsScreen extends StatelessWidget {
           const Color(0xFF2BE4DC),
           Icons.flash_on,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.mediumSpacing),
         _buildThemeOption(
           context,
           settings,
@@ -118,17 +126,8 @@ class SettingsScreen extends StatelessWidget {
           Colors.white,
           Icons.contrast,
         ),
-        const SizedBox(height: 12),
-        _buildThemeOption(
-          context,
-          settings,
-          AppThemeMode.light,
-          "Light",
-          "Clean and bright theme",
-          const Color(0xFF00BFA5),
-          Icons.light_mode,
-        ),
-        const SizedBox(height: 12),
+
+        const SizedBox(height: UIConstants.mediumSpacing),
         _buildThemeOption(
           context,
           settings,
@@ -155,32 +154,42 @@ class SettingsScreen extends StatelessWidget {
 
     return InkWell(
       onTap: () => settings.setThemeMode(mode),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.mediumPadding),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
+              ? Theme.of(
+                  context,
+                ).colorScheme.primary.withOpacity(UIConstants.lightOpacity)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
           border: Border.all(
             color: isSelected
                 ? Theme.of(context).colorScheme.primary
                 : Colors.white24,
-            width: isSelected ? 2 : 1,
+            width: isSelected
+                ? UIConstants.thickBorder
+                : UIConstants.thinBorder,
           ),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(UIConstants.mediumSpacing),
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
+                color: accentColor.withOpacity(UIConstants.mediumOpacity - 0.1),
+                borderRadius: BorderRadius.circular(
+                  UIConstants.buttonBorderRadius,
+                ),
               ),
-              child: Icon(icon, color: accentColor, size: 24),
+              child: Icon(
+                icon,
+                color: accentColor,
+                size: UIConstants.largeIconSize,
+              ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: UIConstants.mediumPadding),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,17 +197,20 @@ class SettingsScreen extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: UIConstants.subtitleFontSize,
                       fontWeight: FontWeight.bold,
                       color: isSelected
                           ? Theme.of(context).colorScheme.primary
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: UIConstants.tinySpacing),
                   Text(
                     description,
-                    style: const TextStyle(fontSize: 12, color: Colors.white60),
+                    style: const TextStyle(
+                      fontSize: UIConstants.smallFontSize,
+                      color: Colors.white60,
+                    ),
                   ),
                 ],
               ),
@@ -207,7 +219,7 @@ class SettingsScreen extends StatelessWidget {
               Icon(
                 Icons.check_circle,
                 color: Theme.of(context).colorScheme.primary,
-                size: 24,
+                size: UIConstants.largeIconSize,
               ),
           ],
         ),
@@ -215,7 +227,10 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFontSizeSelector(BuildContext context, SettingsService settings) {
+  Widget _buildFontSizeSelector(
+    BuildContext context,
+    SettingsService settings,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -234,26 +249,38 @@ class SettingsScreen extends StatelessWidget {
     String sample,
   ) {
     final isSelected = settings.fontSize == size;
-    final fontSize = size == FontSize.small ? 16.0 : (size == FontSize.medium ? 20.0 : 24.0);
+    final fontSize = size == FontSize.small
+        ? 16.0
+        : (size == FontSize.medium ? 20.0 : 24.0);
 
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: UIConstants.tinySpacing,
+        ),
         child: InkWell(
           onTap: () => settings.setFontSize(size),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(
+              vertical: UIConstants.cardPadding,
+            ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
+                  ? Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(UIConstants.lightOpacity)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                UIConstants.smallBorderRadius,
+              ),
               border: Border.all(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary
                     : Colors.white24,
-                width: isSelected ? 2 : 1,
+                width: isSelected
+                    ? UIConstants.thickBorder
+                    : UIConstants.thinBorder,
               ),
             ),
             child: Column(
@@ -268,10 +295,13 @@ class SettingsScreen extends StatelessWidget {
                         : null,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.smallPadding),
                 Text(
                   label,
-                  style: const TextStyle(fontSize: 12, color: Colors.white60),
+                  style: const TextStyle(
+                    fontSize: UIConstants.smallFontSize,
+                    color: Colors.white60,
+                  ),
                 ),
               ],
             ),
@@ -290,12 +320,18 @@ class SettingsScreen extends StatelessWidget {
             children: [
               const Text(
                 "Dyslexic-Friendly Font",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: UIConstants.subtitleFontSize,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: UIConstants.tinySpacing),
               Text(
                 "Uses OpenDyslexic font for better readability",
-                style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.6)),
+                style: TextStyle(
+                  fontSize: UIConstants.smallFontSize,
+                  color: Colors.white.withOpacity(0.6),
+                ),
               ),
             ],
           ),
@@ -309,32 +345,40 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildColorBlindSelector(BuildContext context, SettingsService settings) {
+  Widget _buildColorBlindSelector(
+    BuildContext context,
+    SettingsService settings,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           "Color Blind Mode",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: UIConstants.subtitleFontSize,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.mediumSpacing),
         DropdownButtonFormField<ColorBlindMode>(
           value: settings.colorBlindMode,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white.withOpacity(0.05),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                UIConstants.smallBorderRadius,
+              ),
               borderSide: BorderSide(color: Colors.white24),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: UIConstants.mediumPadding,
+              vertical: UIConstants.mediumSpacing,
+            ),
           ),
           dropdownColor: Theme.of(context).colorScheme.surface,
           items: [
-            DropdownMenuItem(
-              value: ColorBlindMode.none,
-              child: Text("None"),
-            ),
+            DropdownMenuItem(value: ColorBlindMode.none, child: Text("None")),
             DropdownMenuItem(
               value: ColorBlindMode.protanopia,
               child: Text("Protanopia (Red-Blind)"),
@@ -358,13 +402,15 @@ class SettingsScreen extends StatelessWidget {
 
   Widget _buildPreviewCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(UIConstants.cardPadding),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-          width: 1,
+          color: Theme.of(
+            context,
+          ).colorScheme.primary.withOpacity(UIConstants.mediumOpacity),
+          width: UIConstants.thinBorder,
         ),
       ),
       child: Column(
@@ -375,28 +421,29 @@ class SettingsScreen extends StatelessWidget {
               Icon(
                 Icons.preview,
                 color: Theme.of(context).colorScheme.primary,
-                size: 20,
+                size: UIConstants.mediumIconSize,
               ),
-              const SizedBox(width: 8),
-              const Text(
+              const SizedBox(width: UIConstants.smallPadding),
+              Text(
                 "Preview",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.mediumPadding),
           Text(
             "Heart Rate: 72 BPM",
-            style: TextStyle(
-              fontSize: 16,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          const SizedBox(height: UIConstants.smallPadding),
+          Text(
             "This is how text will appear with your current settings.",
-            style: TextStyle(fontSize: 14),
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
       ),

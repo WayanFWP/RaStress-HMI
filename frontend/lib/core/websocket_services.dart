@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../core/sensor_model.dart';
+import 'constants/app_constants.dart';
 
 class WebSocketService {
   final String url;
@@ -15,9 +16,6 @@ class WebSocketService {
 
   DateTime? _lastDataReceivedTime;
   Timer? _dataCheckTimer;
-  
-  // If no data received for 3 seconds, consider it as not receiving
-  static const Duration _dataTimeoutDuration = Duration(seconds: 3);
 
   WebSocketService(this.url);
 
@@ -27,7 +25,7 @@ class WebSocketService {
       if (kDebugMode) {
         print("Attempting to connect to: $url");
       }
-      
+
       _channel = WebSocketChannel.connect(Uri.parse(url));
 
       // Start monitoring data reception
@@ -37,11 +35,11 @@ class WebSocketService {
         (event) {
           isConnected.value = true;
           connectionStatus.value = "Connected - Receiving data";
-          
+
           // Update last data received timestamp
           _lastDataReceivedTime = DateTime.now();
           isReceivingData.value = true;
-          
+
           try {
             final jsonData = jsonDecode(event);
             final newData = SensorData.fromJson(jsonData);
@@ -82,28 +80,31 @@ class WebSocketService {
   /// Monitor if data is still being received
   void _startDataMonitoring() {
     _dataCheckTimer?.cancel();
-    _dataCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_lastDataReceivedTime != null) {
-        final timeSinceLastData = DateTime.now().difference(_lastDataReceivedTime!);
-        
-        if (timeSinceLastData > _dataTimeoutDuration) {
-          // No data received for timeout duration
-          isReceivingData.value = false;
-          if (isConnected.value) {
-            connectionStatus.value = "Connected - No data received";
-          }
-        }
-      } else {
-        isReceivingData.value = false;
+    _dataCheckTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _checkDataTimeout(),
+    );
+  }
+
+  void _checkDataTimeout() {
+    if (_lastDataReceivedTime == null) {
+      isReceivingData.value = false;
+      return;
+    }
+
+    final timeSinceLastData = DateTime.now().difference(_lastDataReceivedTime!);
+
+    if (timeSinceLastData > AppConstants.dataTimeoutDuration) {
+      isReceivingData.value = false;
+      if (isConnected.value) {
+        connectionStatus.value = "Connected - No data received";
       }
-    });
+    }
   }
 
   void reconnect() {
     dispose();
-    Future.delayed(const Duration(seconds: 2), () {
-      connect();
-    });
+    Future.delayed(AppConstants.reconnectDelay, connect);
   }
 
   void dispose() {

@@ -24,12 +24,12 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     _themeMode = AppThemeMode.values[prefs.getInt(_themeKey) ?? 0];
     _fontSize = FontSize.values[prefs.getInt(_fontSizeKey) ?? 1];
     _isDyslexic = prefs.getBool(_dyslexicKey) ?? false;
     _colorBlindMode = ColorBlindMode.values[prefs.getInt(_colorBlindKey) ?? 0];
-    
+
     notifyListeners();
   }
 
@@ -71,12 +71,6 @@ class SettingsService extends ChangeNotifier {
         );
       case AppThemeMode.dark:
         return AppTheme.darkMonochromeTheme(
-          fontSize: _fontSize,
-          isDyslexic: _isDyslexic,
-          colorBlindMode: _colorBlindMode,
-        );
-      case AppThemeMode.light:
-        return AppTheme.lightTheme(
           fontSize: _fontSize,
           isDyslexic: _isDyslexic,
           colorBlindMode: _colorBlindMode,

@@ -1,80 +1,101 @@
 import 'package:flutter/foundation.dart';
+import 'constants/app_constants.dart';
 
 class PeakInfo {
   final int index;
   final double value;
   final double distance; // in meters
 
-  PeakInfo({
-    required this.index,
-    required this.value,
-    required this.distance,
-  });
+  PeakInfo({required this.index, required this.value, required this.distance});
+
+  @override
+  String toString() =>
+      'PeakInfo(index: $index, distance: ${distance.toStringAsFixed(2)}m, value: ${value.toStringAsFixed(1)})';
 }
 
 class RangeProfileAnalyzer {
   /// Detect multiple peaks in range profile
-  /// Returns list of significant peaks
+  /// Returns list of significant peaks sorted by strength
   static List<PeakInfo> detectPeaks(List<double> rangeProfile) {
     if (rangeProfile.isEmpty) return [];
 
-    List<PeakInfo> peaks = [];
-    
-    // Find all local maxima
+    final peaks = _findLocalMaxima(rangeProfile);
+    final filteredPeaks = _filterWeakPeaks(peaks);
+
+    _logPeaksIfDebug(filteredPeaks);
+
+    return filteredPeaks;
+  }
+
+  /// Find all local maxima in the range profile
+  static List<PeakInfo> _findLocalMaxima(List<double> rangeProfile) {
+    final peaks = <PeakInfo>[];
+
     for (int i = 1; i < rangeProfile.length - 1; i++) {
-      // Check if this point is a local maximum
-      if (rangeProfile[i] > rangeProfile[i - 1] && 
-          rangeProfile[i] > rangeProfile[i + 1]) {
-        
-        // Calculate distance in meters (assuming 64 bins cover 0.3m to 2.5m)
-        double distance = 0.3 + (i / 64.0) * 2.2;
-        
-        peaks.add(PeakInfo(
-          index: i,
-          value: rangeProfile[i],
-          distance: distance,
-        ));
+      if (_isLocalMaximum(rangeProfile, i)) {
+        peaks.add(_createPeakInfo(i, rangeProfile[i]));
       }
     }
 
-    // Sort peaks by value (descending)
+    // Sort by value (descending - strongest first)
     peaks.sort((a, b) => b.value.compareTo(a.value));
-
-    // Filter out weak peaks - only keep peaks that are at least 30% of the strongest peak
-    if (peaks.isNotEmpty) {
-      double threshold = peaks.first.value * 0.3;
-      peaks = peaks.where((peak) => peak.value >= threshold).toList();
-    }
-
-    if (kDebugMode && peaks.length > 1) {
-      print("Multiple peaks detected: ${peaks.length} significant peaks");
-      for (var peak in peaks) {
-        print("  Peak at ${peak.distance.toStringAsFixed(2)}m, strength: ${peak.value.toStringAsFixed(1)}");
-      }
-    }
-
     return peaks;
   }
 
+  /// Check if a point is a local maximum
+  static bool _isLocalMaximum(List<double> data, int index) {
+    return data[index] > data[index - 1] && data[index] > data[index + 1];
+  }
+
+  /// Create PeakInfo with calculated distance
+  static PeakInfo _createPeakInfo(int index, double value) {
+    final distance =
+        AppConstants.minDetectionRange +
+        (index / AppConstants.rangeProfileBins) *
+            AppConstants.detectionRangeCoverage;
+
+    return PeakInfo(index: index, value: value, distance: distance);
+  }
+
+  /// Filter out weak peaks based on threshold ratio
+  static List<PeakInfo> _filterWeakPeaks(List<PeakInfo> peaks) {
+    if (peaks.isEmpty) return peaks;
+
+    final threshold = peaks.first.value * AppConstants.peakThresholdRatio;
+    return peaks.where((peak) => peak.value >= threshold).toList();
+  }
+
+  /// Log peaks in debug mode
+  static void _logPeaksIfDebug(List<PeakInfo> peaks) {
+    if (kDebugMode && peaks.length > 1) {
+      debugPrint("Multiple peaks detected: ${peaks.length} significant peaks");
+      for (final peak in peaks) {
+        debugPrint("  $peak");
+      }
+    }
+  }
+
   /// Check if multiple breathing sources are detected
+  /// Returns true if multiple well-separated peaks are found
   static bool hasMultipleSources(List<double> rangeProfile) {
     final peaks = detectPeaks(rangeProfile);
-    
-    // If we have more than one significant peak, multiple sources detected
-    // Also ensure peaks are reasonably separated (at least 0.3m apart)
+
     if (peaks.length < 2) return false;
 
-    // Check distance between peaks
+    // Check if any pair of peaks is sufficiently separated
+    return _hasSeparatedPeaks(peaks);
+  }
+
+  /// Check if peaks are reasonably separated
+  static bool _hasSeparatedPeaks(List<PeakInfo> peaks) {
     for (int i = 0; i < peaks.length - 1; i++) {
       for (int j = i + 1; j < peaks.length; j++) {
-        double distance = (peaks[i].distance - peaks[j].distance).abs();
-        if (distance >= 0.3) {
-          // Two significant peaks with reasonable separation
+        final distance = (peaks[i].distance - peaks[j].distance).abs();
+        if (distance >= AppConstants.minimumPeakSeparation) {
           return true;
         }
       }
     }
-
     return false;
   }
 

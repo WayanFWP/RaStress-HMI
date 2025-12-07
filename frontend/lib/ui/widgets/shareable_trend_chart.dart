@@ -5,10 +5,7 @@ import '../../core/trend_service.dart';
 class ShareableTrendChart extends StatelessWidget {
   final List<TrendDataPoint> trendData;
 
-  const ShareableTrendChart({
-    super.key,
-    required this.trendData,
-  });
+  const ShareableTrendChart({super.key, required this.trendData});
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +16,7 @@ class ShareableTrendChart extends StatelessWidget {
       child: Stack(
         children: [
           // Background: Full trend charts
-          Positioned.fill(
-            child: _buildBackgroundCharts(),
-          ),
+          Positioned.fill(child: _buildBackgroundCharts()),
 
           // Foreground: Stats overlay
           Positioned.fill(
@@ -60,7 +55,7 @@ class ShareableTrendChart extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 40),
-                            
+
                             // Title
                             const Text(
                               'Vital Signs',
@@ -81,7 +76,7 @@ class ShareableTrendChart extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            
+
                             // Date & Time
                             Container(
                               padding: const EdgeInsets.all(12),
@@ -93,7 +88,9 @@ class ShareableTrendChart extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    DateFormat('EEEE, MMM dd, yyyy').format(DateTime.now()),
+                                    DateFormat(
+                                      'EEEE, MMM dd, yyyy',
+                                    ).format(DateTime.now()),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: Colors.white,
@@ -116,17 +113,15 @@ class ShareableTrendChart extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(width: 40),
-                  
+
                   // Right side - Stats overlay
                   Expanded(
                     flex: 3,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildStatsOverlay(),
-                      ],
+                      children: [_buildStatsOverlay()],
                     ),
                   ),
                 ],
@@ -149,31 +144,31 @@ class ShareableTrendChart extends StatelessWidget {
 
     return Column(
       children: [
-      // Heart Rate background chart (top half)
-      Expanded(
-        child: CustomPaint(
-        painter: _BackgroundChartPainter(
-          values: hrValues,
-          minValue: minHR,
-          maxValue: maxHR,
-          lineColor: Colors.redAccent,
+        // Heart Rate background chart (top half)
+        Expanded(
+          child: CustomPaint(
+            painter: _BackgroundChartPainter(
+              values: hrValues,
+              minValue: minHR,
+              maxValue: maxHR,
+              lineColor: Colors.redAccent,
+            ),
+            child: Container(),
+          ),
         ),
-        child: Container(),
+
+        // Breathing Rate background chart (bottom half)
+        Expanded(
+          child: CustomPaint(
+            painter: _BackgroundChartPainter(
+              values: brValues,
+              minValue: minBR,
+              maxValue: maxBR,
+              lineColor: const Color(0xFF2BE4DC),
+            ),
+            child: Container(),
+          ),
         ),
-      ),
-      
-      // Breathing Rate background chart (bottom half)
-      Expanded(
-        child: CustomPaint(
-        painter: _BackgroundChartPainter(
-          values: brValues,
-          minValue: minBR,
-          maxValue: maxBR,
-          lineColor: const Color(0xFF2BE4DC),
-        ),
-        child: Container(),
-        ),
-      ),
       ],
     );
   }
@@ -184,7 +179,7 @@ class ShareableTrendChart extends StatelessWidget {
 
     final avgHR = hrValues.reduce((a, b) => a + b) / hrValues.length;
     final avgBR = brValues.reduce((a, b) => a + b) / brValues.length;
-    
+
     final stressLevel = _calculateStressLevel(avgHR, avgBR);
     final stressColor = _getStressColor(avgHR, avgBR);
 
@@ -193,10 +188,7 @@ class ShareableTrendChart extends StatelessWidget {
       decoration: BoxDecoration(
         // color: const Color(0xFF000000).withOpacity(0.8), // Darker background
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 2,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
@@ -215,9 +207,9 @@ class ShareableTrendChart extends StatelessWidget {
             'Avg Heart Rate',
             Colors.redAccent,
           ),
-          
+
           const SizedBox(height: 28),
-          
+
           // Breathing Rate
           _buildMetricRow(
             Icons.air,
@@ -226,9 +218,9 @@ class ShareableTrendChart extends StatelessWidget {
             'Avg Breathing Rate',
             const Color(0xFF2BE4DC),
           ),
-          
+
           const SizedBox(height: 28),
-          
+
           // Stress Level
           _buildMetricRow(
             Icons.psychology,
@@ -237,7 +229,7 @@ class ShareableTrendChart extends StatelessWidget {
             'Stress Level',
             stressColor,
           ),
-          
+
           const SizedBox(height: 32),
           Container(
             height: 2,
@@ -252,7 +244,7 @@ class ShareableTrendChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Duration info
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -263,7 +255,11 @@ class ShareableTrendChart extends StatelessWidget {
                 height: 40,
                 color: Colors.white.withOpacity(0.2),
               ),
-              _buildInfoItem(Icons.show_chart, 'Data Points', '${trendData.length}'),
+              _buildInfoItem(
+                Icons.show_chart,
+                'Data Points',
+                '${trendData.length}',
+              ),
             ],
           ),
         ],
@@ -283,10 +279,7 @@ class ShareableTrendChart extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
       child: Row(
         children: [
@@ -301,7 +294,7 @@ class ShareableTrendChart extends StatelessWidget {
             child: Icon(icon, color: color, size: 32),
           ),
           const SizedBox(width: 24),
-          
+
           // Label
           Expanded(
             child: Text(
@@ -313,7 +306,7 @@ class ShareableTrendChart extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Value
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -408,10 +401,12 @@ class ShareableTrendChart extends StatelessWidget {
 
   String _getDuration() {
     if (trendData.isEmpty) return '0 min';
-    
-    final duration = trendData.last.timestamp.difference(trendData.first.timestamp);
+
+    final duration = trendData.last.timestamp.difference(
+      trendData.first.timestamp,
+    );
     final minutes = duration.inMinutes;
-    
+
     if (minutes < 1) {
       return '${duration.inSeconds}s';
     } else if (minutes < 60) {
@@ -478,15 +473,19 @@ class _BackgroundChartPainter extends CustomPainter {
     }
   }
 
-  void _drawFilledArea(Canvas canvas, Size size, double width, double height, double padding, double range) {
+  void _drawFilledArea(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+    double range,
+  ) {
     final fillPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          lineColor.withOpacity(0.4),
-          lineColor.withOpacity(0.1),
-        ],
+        colors: [lineColor.withOpacity(0.4), lineColor.withOpacity(0.1)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
 
@@ -505,7 +504,14 @@ class _BackgroundChartPainter extends CustomPainter {
     canvas.drawPath(fillPath, fillPaint);
   }
 
-  void _drawLine(Canvas canvas, Size size, double width, double height, double padding, double range) {
+  void _drawLine(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+    double range,
+  ) {
     final linePaint = Paint()
       ..color = lineColor.withOpacity(0.95)
       ..strokeWidth = 6.0
@@ -514,7 +520,7 @@ class _BackgroundChartPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
 
     final linePath = Path();
-    
+
     for (int i = 0; i < values.length; i++) {
       final x = (i / (values.length - 1)) * width + padding;
       final normalizedValue = (values[i] - minValue) / range;
@@ -530,7 +536,14 @@ class _BackgroundChartPainter extends CustomPainter {
     canvas.drawPath(linePath, linePaint);
   }
 
-  void _drawPoints(Canvas canvas, Size size, double width, double height, double padding, double range) {
+  void _drawPoints(
+    Canvas canvas,
+    Size size,
+    double width,
+    double height,
+    double padding,
+    double range,
+  ) {
     final pointPaint = Paint()
       ..color = lineColor
       ..style = PaintingStyle.fill;
