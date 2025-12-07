@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/stress_level_service.dart';
+import '../constants/ui_constants.dart';
 import 'dart:math' as math;
 
 class StressDetailScreen extends StatefulWidget {
@@ -47,10 +48,10 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
     final stressData = widget.stressLevelService.currentStressLevel.value;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1C),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Vital Analysis"),
-        backgroundColor: const Color(0xFF151B2D),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -58,20 +59,20 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(UIConstants.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Overall Stress Level Summary
               _buildStressSummary(stressData),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Active Alerts Section
               if (vitalsSnapshot != null &&
                   vitalsSnapshot.activeAlerts.isNotEmpty) ...[
                 _buildAlertsSection(vitalsSnapshot),
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.extraLargeSpacing),
               ],
 
               // Heart Rate Analysis
@@ -86,7 +87,7 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
                 description: _getHeartRateDescription(vitalsSnapshot),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.mediumPadding),
 
               // Breathing Rate Analysis
               _buildVitalCard(
@@ -100,7 +101,7 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
                 description: _getBreathingRateDescription(vitalsSnapshot),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.mediumPadding),
 
               // Chest Displacement Analysis
               _buildVitalCard(
@@ -114,7 +115,7 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
                 description: _getChestDisplacementDescription(vitalsSnapshot),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Info footer
               _buildInfoFooter(),
@@ -130,33 +131,40 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
     final label = stressData?.label ?? "Analyzing...";
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(UIConstants.cardPadding),
       child: Column(
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.mediumPadding),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withOpacity(UIConstants.mediumOpacity - 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(_getStressIcon(stressData), color: color, size: 32),
+                child: Icon(
+                  _getStressIcon(stressData),
+                  color: color,
+                  size: UIConstants.extraLargeIconSize,
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: UIConstants.mediumPadding),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Overall Stress Level",
-                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                      style: TextStyle(
+                        fontSize: UIConstants.bodyFontSize,
+                        color: UIConstants.getSecondaryText(context),
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.tinySpacing),
                     Text(
                       label,
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: UIConstants.largeTitleFontSize,
                         color: color,
                         fontWeight: FontWeight.bold,
                       ),
@@ -177,19 +185,23 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
       children: [
         const Row(
           children: [
-            Icon(Icons.notifications_active, color: Colors.orange, size: 20),
-            SizedBox(width: 8),
+            Icon(
+              Icons.notifications_active,
+              color: Colors.orange,
+              size: UIConstants.mediumIconSize,
+            ),
+            SizedBox(width: UIConstants.smallPadding),
             Text(
               "Active Alerts",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: UIConstants.titleFontSize,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.mediumSpacing),
         ...vitalsSnapshot.activeAlerts.map((alert) => _buildAlertItem(alert)),
       ],
     );
@@ -217,23 +229,26 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: UIConstants.smallPadding),
+      padding: const EdgeInsets.all(UIConstants.mediumSpacing),
       decoration: BoxDecoration(
-        color: alertColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: alertColor.withOpacity(0.3), width: 1),
+        color: alertColor.withOpacity(UIConstants.lightOpacity - 0.05),
+        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
+        border: Border.all(
+          color: alertColor.withOpacity(UIConstants.mediumOpacity),
+          width: UIConstants.thinBorder,
+        ),
       ),
       child: Row(
         children: [
-          Icon(alertIcon, color: alertColor, size: 20),
-          const SizedBox(width: 12),
+          Icon(alertIcon, color: alertColor, size: UIConstants.mediumIconSize),
+          const SizedBox(width: UIConstants.mediumSpacing),
           Expanded(
             child: Text(
               alert.message,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.9),
-                fontSize: 13,
+                fontSize: UIConstants.bodyFontSize - 1,
               ),
             ),
           ),
@@ -255,10 +270,10 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
     final progress = _calculateProgress(title, value);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(UIConstants.cardPadding),
       decoration: BoxDecoration(
-        color: const Color(0xFF151B2D),
-        borderRadius: BorderRadius.circular(10),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius - 2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,49 +282,59 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
             children: [
               // Circular progress indicator
               SizedBox(
-                width: 80,
-                height: 80,
+                width: UIConstants.miniChartHeight,
+                height: UIConstants.miniChartHeight,
                 child: CustomPaint(
                   painter: _MiniCircularProgressPainter(
                     progress: progress,
                     color: color,
-                    backgroundColor: color.withOpacity(0.1),
+                    backgroundColor: color.withOpacity(
+                      UIConstants.lightOpacity - 0.05,
+                    ),
                   ),
-                  child: Center(child: Icon(icon, color: color, size: 28)),
+                  child: Center(
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: UIConstants.largeTitleFontSize,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: UIConstants.cardPadding),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white70,
+                      style: TextStyle(
+                        fontSize: UIConstants.subtitleFontSize,
+                        color: UIConstants.getSecondaryText(context),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.tinySpacing),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
                           value.toStringAsFixed(1),
                           style: TextStyle(
-                            fontSize: 32,
+                            fontSize: UIConstants.displayFontSize,
                             color: color,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: UIConstants.smallSpacing),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
+                          padding: const EdgeInsets.only(
+                            bottom: UIConstants.smallSpacing,
+                          ),
                           child: Text(
                             unit,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.white70,
+                            style: TextStyle(
+                              fontSize: UIConstants.subtitleFontSize,
+                              color: UIConstants.getSecondaryText(context),
                             ),
                           ),
                         ),
@@ -320,40 +345,49 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.mediumPadding),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(UIConstants.mediumSpacing),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: color.withOpacity(UIConstants.lightOpacity - 0.05),
+              borderRadius: BorderRadius.circular(
+                UIConstants.smallBorderRadius,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: color, size: 16),
-                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.info_outline,
+                      color: color,
+                      size: UIConstants.smallIconSize,
+                    ),
+                    const SizedBox(width: UIConstants.smallPadding),
                     Text(
                       "Status: $status",
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: UIConstants.bodyFontSize,
                         fontWeight: FontWeight.bold,
                         color: color,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.smallPadding),
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                  style: TextStyle(
+                    fontSize: UIConstants.bodyFontSize - 1,
+                    color: UIConstants.getSecondaryText(context),
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.smallPadding),
                 Text(
                   "Normal range: $normalRange",
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: UIConstants.smallFontSize,
                     color: Colors.white54,
                     fontStyle: FontStyle.italic,
                   ),
@@ -368,24 +402,26 @@ class _StressDetailScreenState extends State<StressDetailScreen> {
 
   Widget _buildInfoFooter() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.mediumPadding),
       decoration: BoxDecoration(
-        color: const Color(0xFF151B2D).withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(
+          context,
+        ).colorScheme.surface.withOpacity(UIConstants.heavyOpacity),
+        borderRadius: BorderRadius.circular(UIConstants.smallBorderRadius),
       ),
       child: Row(
         children: [
           Icon(
             Icons.info_outline,
-            color: Colors.white.withOpacity(0.5),
-            size: 20,
+            color: Colors.white.withOpacity(UIConstants.heavyOpacity),
+            size: UIConstants.mediumIconSize,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: UIConstants.mediumSpacing),
           Expanded(
             child: Text(
               "This analysis is updated every 5 seconds based on averaged sensor data. Consult healthcare professionals for medical concerns.",
               style: TextStyle(
-                fontSize: 12,
+                fontSize: UIConstants.smallFontSize,
                 color: Colors.white.withOpacity(0.5),
               ),
             ),

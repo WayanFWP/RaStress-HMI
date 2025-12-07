@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/stat_card.dart';
-import '../widgets/section_title.dart';
 import '../widgets/waveform_chart.dart';
 import '../widgets/sensor_information.dart';
-import '../widgets/waveform_chart.dart';
 import '../../core/websocket_services.dart';
 import '../../core/waveform_service.dart';
 import '../../core/sensor_model.dart';

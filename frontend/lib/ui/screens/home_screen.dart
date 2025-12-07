@@ -3,7 +3,10 @@ import '../../core/trend_service.dart';
 import '../../core/websocket_services.dart';
 import '../../core/stress_level_service.dart';
 import '../../core/range_profile_analyzer.dart';
+import '../constants/ui_constants.dart';
 import '../widgets/circular_stress_indicator.dart';
+import '../widgets/common/status_badge.dart';
+import '../widgets/common/alert_card.dart';
 import 'trend_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -100,127 +103,12 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Dashboard",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  // Connection Status Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isReceivingData
-                          ? Colors.green.withOpacity(0.2)
-                          : Colors.red.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isReceivingData ? Colors.green : Colors.red,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          isReceivingData ? Icons.circle : Icons.circle,
-                          color: isReceivingData ? Colors.green : Colors.red,
-                          size: 8,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          isReceivingData ? "Live" : "No Data",
-                          style: TextStyle(
-                            color: isReceivingData ? Colors.green : Colors.red,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+              _buildHeader(isReceivingData),
+              const SizedBox(height: UIConstants.extraLargeSpacing),
 
               // Multiple Sources Warning (if detected)
               if (_hasMultipleSources && isReceivingData)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.orange, width: 2),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.warning_amber_rounded,
-                          color: Colors.orange,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Text(
-                                  "Multiple Sources Detected",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    "$_sourceCount targets",
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              "Multiple breathing sources detected — stand alone for accurate measurements.",
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildMultipleSourcesWarning(),
 
               // Circular Stress Level Indicator Card
               CircularStressIndicator(
@@ -412,6 +300,52 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build header with title and status badge
+  Widget _buildHeader(bool isReceivingData) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          "Dashboard",
+          style: TextStyle(
+            fontSize: UIConstants.largeTitleFontSize,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        StatusBadge(isActive: isReceivingData),
+      ],
+    );
+  }
+
+  /// Build multiple sources warning alert
+  Widget _buildMultipleSourcesWarning() {
+    return AlertCard(
+      icon: Icons.warning_amber_rounded,
+      color: Colors.orange,
+      title: "Multiple Sources Detected",
+      message:
+          "Multiple breathing sources detected — stand alone for accurate measurements.",
+      badge: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: UIConstants.smallPadding,
+          vertical: UIConstants.tinySpacing,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(UIConstants.mediumOpacity),
+          borderRadius: BorderRadius.circular(UIConstants.buttonBorderRadius),
+        ),
+        child: Text(
+          "$_sourceCount targets",
+          style: const TextStyle(
+            fontSize: UIConstants.captionFontSize,
+            fontWeight: FontWeight.bold,
+            color: Colors.orange,
           ),
         ),
       ),

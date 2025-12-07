@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/vital_signs_utils.dart';
+import '../constants/ui_constants.dart';
 
 class SensorInfoWidget extends StatelessWidget {
   final double detectionRange;
@@ -19,10 +21,10 @@ class SensorInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.largeSpacing),
       decoration: BoxDecoration(
-        color: const Color(0xFF151B2D),
-        borderRadius: BorderRadius.circular(18),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,17 +269,7 @@ class SensorInfoWidget extends StatelessWidget {
   }
 
   String _getQualityDescription(int percentage) {
-    if (percentage >= 80) {
-      return "Excellent signal quality - Optimal for accurate measurements";
-    } else if (percentage >= 60) {
-      return "Good signal quality - Reliable measurements expected";
-    } else if (percentage >= 40) {
-      return "Fair signal quality - Some measurements may vary";
-    } else if (percentage >= 20) {
-      return "Poor signal quality - Consider repositioning";
-    } else {
-      return "Very poor signal - Please check sensor connection";
-    }
+    return VitalSignsUtils.getSignalQualityDescription(percentage);
   }
 
   Color _getQualityColor(int percentage) {

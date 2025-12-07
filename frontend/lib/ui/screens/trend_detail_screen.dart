@@ -3,6 +3,7 @@ import '../../core/trend_service.dart';
 import '../../core/websocket_services.dart';
 import '../../core/trend_export_service.dart';
 import '../widgets/shareable_trend_chart.dart';
+import '../constants/ui_constants.dart';
 import 'package:intl/intl.dart';
 
 class TrendDetailScreen extends StatefulWidget {
@@ -91,13 +92,19 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(
+                    UIConstants.smallBorderRadius,
+                  ),
                   border: Border.all(
-                    color: const Color(0xFF2BE4DC).withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.primary.withOpacity(
+                      UIConstants.mediumOpacity,
+                    ),
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(
+                    UIConstants.smallBorderRadius,
+                  ),
                   child: SingleChildScrollView(
                     scrollDirection:
                         Axis.horizontal, // Allow horizontal scrolling
@@ -113,31 +120,41 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.largeSpacing),
             // Info text
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: UIConstants.mediumPadding,
+                vertical: UIConstants.smallPadding,
+              ),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(
+                  UIConstants.buttonBorderRadius,
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: const Color(0xFF2BE4DC),
-                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: UIConstants.smallIconSize,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Landscape format • 1920x1080 • Scroll to preview',
-                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  const SizedBox(width: UIConstants.smallPadding),
+                  Builder(
+                    builder: (context) => Text(
+                      'Landscape format • 1920x1080 • Scroll to preview',
+                      style: TextStyle(
+                        fontSize: UIConstants.smallFontSize,
+                        color: UIConstants.getSecondaryText(context),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.mediumSpacing),
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -149,12 +166,12 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[800],
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+                      horizontal: UIConstants.largePadding,
+                      vertical: UIConstants.mediumPadding,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: UIConstants.mediumSpacing),
                 ElevatedButton.icon(
                   onPressed: () async {
                     await TrendExportService.shareToWhatsApp(
@@ -176,14 +193,14 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF25D366), // WhatsApp green
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
+                      horizontal: UIConstants.extraLargeSpacing + 8,
+                      vertical: UIConstants.mediumPadding,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.mediumSpacing),
           ],
         ),
       ),
@@ -193,7 +210,6 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final trendData = widget.trendService.trendData.value;
-    final isReceivingData = widget.webSocketService.isReceivingData.value;
 
     return Scaffold(
       appBar: AppBar(
@@ -220,42 +236,9 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(UIConstants.screenPadding),
           child: Column(
             children: [
-              // Info banner
-              if (trendData.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.only(bottom: 18),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2BE4DC).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF2BE4DC).withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        color: Color(0xFF2BE4DC),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Tap the share button to export your trends',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
               // Heart Rate Trend
               _buildTrendCard(
                 title: "Heart Rate",
@@ -265,7 +248,6 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
                 data: trendData,
                 isHeartRate: true,
               ),
-              const SizedBox(height: 18),
 
               // Breathing Rate Trend
               _buildTrendCard(
@@ -276,21 +258,30 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
                 data: trendData,
                 isHeartRate: false,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: UIConstants.screenPadding),
 
               // Info text
               if (trendData.isEmpty)
                 Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(
+                      UIConstants.extraLargeSpacing + 8,
+                    ),
                     child: Column(
                       children: [
-                        Icon(Icons.timeline, size: 64, color: Colors.white24),
-                        const SizedBox(height: 16),
+                        Icon(
+                          Icons.timeline,
+                          size: UIConstants.extraLargeIconSize * 2,
+                          color: Colors.white24,
+                        ),
+                        const SizedBox(height: UIConstants.mediumSpacing),
                         Text(
                           "Collecting data...\nTrends will appear after 3 seconds",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                          style: TextStyle(
+                            color: UIConstants.getSecondaryText(context),
+                            fontSize: UIConstants.bodyFontSize,
+                          ),
                         ),
                       ],
                     ),
@@ -321,43 +312,44 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
-      ),
+      padding: const EdgeInsets.all(UIConstants.cardPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 8),
+              Icon(icon, color: color, size: UIConstants.mediumIconSize),
+              const SizedBox(width: UIConstants.smallPadding),
               Text(
                 title,
-                style: const TextStyle(fontSize: 15, color: Colors.white),
+                style: const TextStyle(
+                  fontSize: UIConstants.bodyFontSize + 1,
+                  color: Colors.white,
+                ),
               ),
               const Spacer(),
               Text(
                 data.isEmpty ? "--" : avgValue.toStringAsFixed(1),
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: UIConstants.titleFontSize + 2,
                   color: color,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: UIConstants.tinySpacing),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 12, color: Colors.white54),
+                style: TextStyle(
+                  fontSize: UIConstants.smallFontSize,
+                  color: UIConstants.getSecondaryText(context),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: UIConstants.cardPadding),
           data.isEmpty
               ? SizedBox(
-                  height: 120,
+                  height: UIConstants.standardChartHeight - 40,
                   child: Center(
                     child: Text(
                       "Waiting for data...",
@@ -389,7 +381,7 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 120,
+          height: UIConstants.standardChartHeight - 40,
           child: CustomPaint(
             painter: _LineChartPainter(
               values: values,
@@ -397,25 +389,37 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
               maxValue: maxValue,
               lineColor: color,
             ),
-            size: const Size(double.infinity, 120),
+            size: const Size(
+              double.infinity,
+              UIConstants.standardChartHeight - 40,
+            ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.mediumSpacing),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               timeFormat.format(data.first.timestamp),
-              style: const TextStyle(fontSize: 11, color: Colors.white54),
+              style: TextStyle(
+                fontSize: UIConstants.captionFontSize,
+                color: UIConstants.getSecondaryText(context),
+              ),
             ),
             if (data.length > 2)
               Text(
                 timeFormat.format(data[data.length ~/ 2].timestamp),
-                style: const TextStyle(fontSize: 11, color: Colors.white54),
+                style: TextStyle(
+                  fontSize: UIConstants.captionFontSize,
+                  color: UIConstants.getSecondaryText(context),
+                ),
               ),
             Text(
               timeFormat.format(data.last.timestamp),
-              style: const TextStyle(fontSize: 11, color: Colors.white54),
+              style: TextStyle(
+                fontSize: UIConstants.captionFontSize,
+                color: UIConstants.getSecondaryText(context),
+              ),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/ui_constants.dart';
 
 class StatCard extends StatelessWidget {
   final IconData icon;
@@ -19,22 +20,28 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(UIConstants.cardPadding),
       decoration: BoxDecoration(
-        color: const Color(0xFF151B2D),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(.4), width: 1.5),
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(UIConstants.cardBorderRadius),
+        border: Border.all(
+          color: color.withOpacity(.4),
+          width: UIConstants.mediumBorder,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 6),
+              Icon(icon, color: color, size: UIConstants.mediumIconSize),
+              const SizedBox(width: UIConstants.smallSpacing),
               Text(
                 label,
-                style: const TextStyle(fontSize: 14, color: Colors.white70),
+                style: TextStyle(
+                  fontSize: UIConstants.bodyFontSize,
+                  color: UIConstants.getSecondaryText(context),
+                ),
               ),
             ],
           ),
@@ -45,13 +52,16 @@ class StatCard extends StatelessWidget {
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: UIConstants.displayFontSize,
                   color: color,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 4),
-              Text(unit, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: UIConstants.tinySpacing),
+              Text(
+                unit,
+                style: const TextStyle(fontSize: UIConstants.subtitleFontSize),
+              ),
             ],
           ),
         ],
